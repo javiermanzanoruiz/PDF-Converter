@@ -1,0 +1,1090 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>PDF Premium Converter — Javier Manzano Fitness</title>
+<meta name="description" content="Convierte documentos básicos en PDFs profesionales para tus clientes."/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',system-ui,sans-serif;background:#080c20;color:#e8edf8;min-height:100vh}
+h1,h2,h3{font-family:'Playfair Display',Georgia,serif}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:#0f1535}
+::-webkit-scrollbar-thumb{background:#1e2a6e;border-radius:3px}
+
+/* Layout */
+.app{max-width:860px;margin:0 auto;padding:0 16px 60px}
+header{border-bottom:1px solid rgba(255,255,255,0.06);padding:16px;display:flex;align-items:center;justify-content:space-between;margin-bottom:0}
+.logo{display:flex;align-items:center;gap:12px}
+.logo-badge{width:34px;height:34px;border-radius:10px;background:#2563eb;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;color:#fff}
+.logo-text p:first-child{font-size:10px;color:rgba(255,255,255,0.35);letter-spacing:0.12em;text-transform:uppercase}
+.logo-text p:last-child{font-size:13px;font-weight:600;color:#fff}
+.badge-pill{font-size:10px;font-weight:600;padding:3px 10px;border-radius:20px;background:rgba(37,99,235,0.15);color:#93c5fd;border:1px solid rgba(37,99,235,0.25)}
+
+/* Step bar */
+.stepbar{border-bottom:1px solid rgba(255,255,255,0.05);padding:10px 16px;display:flex;align-items:center;gap:4px}
+.step-btn{display:flex;align-items:center;gap:6px;padding:5px 10px;border-radius:8px;border:none;background:transparent;color:rgba(255,255,255,0.3);font-size:12px;font-weight:500;cursor:pointer;transition:all .2s;font-family:inherit}
+.step-btn.active{background:rgba(37,99,235,0.15);color:#93c5fd;border:1px solid rgba(37,99,235,0.3)}
+.step-btn.done{color:rgba(99,160,255,0.6);cursor:pointer}
+.step-btn.done:hover{color:#93c5fd;background:rgba(255,255,255,0.05)}
+.step-btn:disabled{cursor:not-allowed}
+.step-num{width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700}
+.step-num.active{background:#3b82f6;color:#fff}
+.step-num.done{background:#1e3a7a;color:#93c5fd}
+.step-num.pending{background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.25)}
+.step-div{width:20px;height:1px;background:rgba(255,255,255,0.08)}
+.step-div.done{background:rgba(59,130,246,0.35)}
+
+/* Glass cards */
+.glass{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:16px}
+.glass-blue{background:rgba(59,130,246,0.06);border:1px solid rgba(59,130,246,0.2);border-radius:16px}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 20px;border-radius:12px;border:none;font-family:inherit;font-size:14px;font-weight:500;cursor:pointer;transition:all .2s}
+.btn-primary{background:#2563eb;color:#fff;box-shadow:0 4px 20px rgba(37,99,235,0.3)}
+.btn-primary:hover{background:#1d4ed8}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed}
+.btn-secondary{background:rgba(255,255,255,0.05);color:#e8edf8;border:1px solid rgba(255,255,255,0.1)}
+.btn-secondary:hover{background:rgba(255,255,255,0.1)}
+.btn-sm{padding:6px 12px;font-size:12px;border-radius:8px}
+.btn-icon{width:30px;height:30px;padding:0;border-radius:8px;justify-content:center;font-size:13px}
+.btn-danger{background:rgba(127,29,29,0.3);color:#fca5a5;border:1px solid rgba(127,29,29,0.4)}
+.btn-danger:hover{background:rgba(127,29,29,0.5)}
+
+/* Forms */
+input,textarea{width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:10px 14px;color:#e8edf8;font-family:inherit;font-size:14px;transition:all .2s;outline:none}
+input:focus,textarea:focus{border-color:rgba(59,130,246,0.5);background:rgba(255,255,255,0.07)}
+textarea{resize:vertical;line-height:1.6}
+label{display:block;font-size:11px;font-weight:600;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px}
+
+/* Tabs */
+.tabs{display:flex;gap:3px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:4px;width:fit-content;margin-bottom:20px}
+.tab{padding:7px 16px;border-radius:9px;border:none;background:transparent;color:rgba(255,255,255,0.45);font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s}
+.tab.active{background:#2563eb;color:#fff;box-shadow:0 2px 12px rgba(37,99,235,0.4)}
+
+/* Sections list */
+.section-row{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:12px;border:1px solid rgba(255,255,255,0.07);background:rgba(255,255,255,0.025);margin-bottom:8px;transition:all .2s}
+.section-row:hover{border-color:rgba(255,255,255,0.12)}
+.section-row.drag-over{border-color:rgba(59,130,246,0.5);background:rgba(59,130,246,0.06)}
+.section-row.dragging{opacity:.4;transform:scale(.98)}
+.drag-handle{cursor:grab;color:rgba(255,255,255,0.2);padding:2px;transition:color .2s}
+.drag-handle:hover{color:rgba(255,255,255,0.5)}
+.section-num{width:24px;height:24px;border-radius:6px;background:rgba(37,99,235,0.2);color:#93c5fd;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.section-info{flex:1;min-width:0}
+.section-title-text{font-size:13px;font-weight:500;color:#e8edf8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.section-preview{font-size:11px;color:rgba(255,255,255,0.3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+.section-actions{display:flex;gap:4px;flex-shrink:0}
+
+/* Section editor expanded */
+.section-editor{padding:16px;border-radius:12px;border:1px solid rgba(59,130,246,0.3);background:rgba(59,130,246,0.04);margin-bottom:8px}
+
+/* Drop zone */
+.drop-zone{border:2px dashed rgba(59,130,246,0.3);border-radius:20px;padding:60px 24px;text-align:center;cursor:pointer;transition:all .3s}
+.drop-zone:hover,.drop-zone.dragover{border-color:rgba(59,130,246,0.7);background:rgba(59,130,246,0.05)}
+
+/* Theme selector */
+.theme-card{padding:16px;border-radius:14px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.03);cursor:pointer;transition:all .2s;text-align:left;width:100%}
+.theme-card:hover{border-color:rgba(255,255,255,0.15)}
+.theme-card.selected{border-color:rgba(59,130,246,0.5);background:rgba(59,130,246,0.06)}
+.theme-dots{display:flex;gap:6px;margin-bottom:10px}
+.theme-dot{width:28px;height:28px;border-radius:8px}
+
+/* PDF Preview */
+.pdf-preview{border-radius:20px;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,0.6)}
+.pdf-page-header{padding:10px 28px;border-bottom:1px solid;display:flex;justify-content:space-between;align-items:center}
+.pdf-page-header p{font-size:9px;letter-spacing:0.12em;text-transform:uppercase}
+.pdf-content{padding:28px}
+.pdf-section{margin-bottom:20px}
+.pdf-section-title{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.pdf-section-bar{width:3px;height:20px;border-radius:2px;flex-shrink:0}
+.pdf-section-text{font-size:13px;font-weight:600}
+.pdf-body{font-size:12px;line-height:1.7;padding-left:13px}
+.pdf-divider{height:1px;margin:18px 0}
+.pdf-footer{padding:8px 28px;border-top:1px solid;display:flex;justify-content:space-between;align-items:center}
+.pdf-footer p{font-size:9px}
+.pdf-brand-strip{padding:8px;text-align:center;font-size:10px;font-weight:700;letter-spacing:0.15em;color:#fff}
+
+/* Cover */
+.pdf-cover{display:flex;min-height:340px}
+.pdf-cover-bar{width:36px;flex-shrink:0;display:flex;flex-direction:column}
+.pdf-cover-bar-accent{height:70px}
+.pdf-cover-content{flex:1;padding:28px 28px 20px}
+.pdf-cover-brand{font-size:9px;font-weight:700;letter-spacing:0.15em;text-align:right;margin-bottom:28px}
+.pdf-cover-title{font-family:'Playfair Display',serif;font-size:26px;font-weight:700;line-height:1.2;margin-bottom:8px}
+.pdf-cover-line{width:52px;height:3px;border-radius:2px;margin-bottom:10px}
+.pdf-cover-subtitle{font-size:13px;margin-bottom:16px}
+.pdf-cover-client{display:inline-block;padding:8px 14px;border-radius:10px;margin-bottom:16px}
+.pdf-cover-client-label{font-size:9px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:3px}
+.pdf-cover-client-name{font-size:13px;font-weight:600}
+.pdf-cover-bottom{margin-top:auto;padding-top:16px;border-top:1px solid}
+.pdf-cover-date{font-size:10px;margin-bottom:4px}
+.pdf-cover-tagline{font-size:11px;font-style:italic}
+
+/* Stats grid */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:24px}
+.stat-card{padding:14px;border-radius:12px;text-align:center}
+.stat-label{font-size:10px;font-weight:600;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px}
+.stat-value{font-size:22px;font-weight:700;font-family:'Playfair Display',serif}
+.stat-sub{font-size:10px;color:rgba(255,255,255,0.3);margin-top:2px}
+
+/* Alert */
+.alert{display:flex;align-items:flex-start;gap:10px;padding:12px 16px;border-radius:12px;margin-bottom:16px;font-size:13px}
+.alert-info{background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.2);color:#bfdbfe}
+.alert-success{background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);color:#6ee7b7}
+.alert-error{background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.25);color:#fca5a5}
+
+/* Spinner */
+.spinner{width:20px;height:20px;border:2px solid rgba(255,255,255,0.2);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+.spinner-blue{border-color:rgba(59,130,246,0.2);border-top-color:#3b82f6}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Pulse dot */
+.pulse{width:8px;height:8px;border-radius:50%;background:#3b82f6;animation:pulse 1.5s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* Animations */
+.fade-in{animation:fadeIn .4s ease-out}
+.slide-up{animation:slideUp .4s ease-out}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes slideUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+
+/* Utilities */
+.flex{display:flex}.flex-col{flex-direction:column}.items-center{align-items:center}.items-start{align-items:flex-start}
+.justify-between{justify-content:space-between}.justify-center{justify-content:center}.gap-2{gap:8px}.gap-3{gap:12px}
+.gap-4{gap:16px}.gap-5{gap:20px}.mt-2{margin-top:8px}.mt-3{margin-top:12px}.mt-4{margin-top:16px}.mt-6{margin-top:24px}
+.mb-2{margin-bottom:8px}.mb-3{margin-bottom:12px}.mb-4{margin-bottom:16px}.mb-6{margin-bottom:24px}.mb-8{margin-bottom:32px}
+.pt-6{padding-top:24px}.p-4{padding:16px}.p-5{padding:20px}.p-6{padding:24px}
+.text-sm{font-size:13px}.text-xs{font-size:11px}.text-lg{font-size:18px}.text-xl{font-size:20px}.text-2xl{font-size:24px}
+.text-3xl{font-size:30px}.text-4xl{font-size:36px}.font-bold{font-weight:700}.font-semibold{font-weight:600}
+.font-medium{font-weight:500}.text-center{text-align:center}.text-right{text-align:right}
+.text-muted{color:rgba(255,255,255,0.4)}.text-accent{color:#93c5fd}.text-white{color:#fff}
+.w-full{width:100%}.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.border-top{border-top:1px solid rgba(255,255,255,0.06);padding-top:24px}
+.hidden{display:none}.overflow-auto{overflow:auto}.max-h-400{max-height:400px}
+.italic{font-style:italic}.truncate{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gradient-text{background:linear-gradient(135deg,#93c5fd,#dbeafe);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+
+/* Back link */
+.back-link{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:rgba(255,255,255,0.35);background:none;border:none;cursor:pointer;font-family:inherit;margin-bottom:14px;transition:color .2s;padding:0}
+.back-link:hover{color:rgba(255,255,255,0.7)}
+
+/* How it works steps */
+.howto-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:32px}
+.howto-card{padding:18px;border-radius:14px;background:rgba(255,255,255,0.025);border:1px solid rgba(255,255,255,0.07)}
+.howto-icon{font-size:22px;margin-bottom:6px}
+.howto-n{font-size:10px;font-weight:700;color:rgba(59,130,246,0.5);letter-spacing:0.12em;margin-bottom:4px}
+
+/* Responsive */
+@media(max-width:640px){
+  .stats-grid{grid-template-columns:1fr 1fr}
+  .grid-2{grid-template-columns:1fr}
+  .grid-3{grid-template-columns:1fr}
+  .howto-grid{grid-template-columns:1fr}
+  .tabs{flex-wrap:wrap}
+  header{padding:12px}
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="logo">
+    <div class="logo-badge">JM</div>
+    <div class="logo-text">
+      <p>Javier Manzano Fitness</p>
+      <p>PDF Premium Converter</p>
+    </div>
+  </div>
+  <span class="badge-pill">v1.0 · Sin backend</span>
+</header>
+
+<!-- STEP BAR -->
+<div class="stepbar" id="stepbar" style="display:none"></div>
+
+<!-- MAIN -->
+<div class="app" id="app"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════════
+const state = {
+  step: 'upload',
+  rawText: '',
+  sections: [],
+  filename: '',
+  meta: {
+    title: '', subtitle: '', clientName: '',
+    date: new Date().toLocaleDateString('es-ES',{year:'numeric',month:'long',day:'numeric'}),
+    contact: '@javiermanzanofitness',
+    brandName: 'JAVIER MANZANO FITNESS',
+    tagline: 'La clave está en el equilibrio',
+    closingMessage: ''
+  },
+  theme: 'premium-blue',
+  editingId: null,
+  activeTab: 'sections',
+  dragSrc: null,
+}
+
+function setState(patch) {
+  Object.assign(state, patch)
+  render()
+}
+
+// ═══════════════════════════════════════════════════════════════
+// PDF.JS EXTRACTOR
+// ═══════════════════════════════════════════════════════════════
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+  'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js'
+
+async function extractPDF(file) {
+  const ab = await file.arrayBuffer()
+  const pdf = await pdfjsLib.getDocument({data: ab}).promise
+  const pages = []
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const page = await pdf.getPage(i)
+    const tc = await page.getTextContent()
+    pages.push(tc.items.map(x => x.str).join(' '))
+  }
+  return {fullText: pages.join('\n\n'), pageCount: pdf.numPages}
+}
+
+function genId() { return Math.random().toString(36).substr(2,9) }
+
+function structureText(raw) {
+  let text = raw.replace(/\s+/g,' ').replace(/- /g,'').replace(/\u00AD/g,'')
+  const lines = text.split(/(?<=[.!?])\s+(?=[A-ZÁÉÍÓÚÑ])/).map(l=>l.trim()).filter(l=>l.length>0)
+  const sections = []
+  let curTitle = null, buf = []
+
+  for (const line of lines) {
+    if (isTitle(line)) {
+      if (curTitle !== null || buf.length > 0)
+        sections.push({id:genId(),title:curTitle||'',content:buf.join(' ').trim(),isIntro:curTitle===null})
+      curTitle = cleanTitle(line); buf = []
+    } else buf.push(line)
+  }
+  if (buf.length > 0 || curTitle)
+    sections.push({id:genId(),title:curTitle||'',content:buf.join(' ').trim(),isIntro:curTitle===null&&sections.length===0})
+
+  return sections.map(s=>({...s,content:s.content.replace(/\s{2,}/g,' ').trim()})).filter(s=>s.content.length>10||s.title.length>0)
+}
+
+function isTitle(line) {
+  if (line.length > 120 || line.length < 3) return false
+  return [
+    /^[0-9]+[\.\)]\s+[A-ZÁÉÍÓÚÑ]/,
+    /^[A-ZÁÉÍÓÚÑ][A-ZÁÉÍÓÚÑ\s]{5,40}$/,
+    /^#{1,3}\s/,
+    /^(introducción|conclusión|resumen|objetivos|recomendaciones|plan|protocolo|nutrición|entrenamiento|descanso|suplementación|metodología)/i
+  ].some(p=>p.test(line.trim()))
+}
+function cleanTitle(l){return l.replace(/^[0-9]+[\.\)]\s+/,'').replace(/^#+\s+/,'').trim()}
+
+function inferMeta(filename, sections) {
+  const name = filename.replace('.pdf','').replace(/_/g,' ')
+  const all = sections.map(s=>s.title+' '+s.content).join(' ').toLowerCase()
+  let type='Documento'
+  if (all.includes('entrenamiento')||all.includes('ejercicio')) type='Plan de Entrenamiento'
+  else if (all.includes('nutrición')||all.includes('dieta')||all.includes('alimentación')) type='Plan Nutricional'
+  else if (all.includes('protocolo')) type='Protocolo'
+  else if (all.includes('guía')||all.includes('guia')) type='Guía'
+  return {
+    title: name.length>3 ? name : type,
+    subtitle: type,
+    date: new Date().toLocaleDateString('es-ES',{year:'numeric',month:'long',day:'numeric'})
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// PDF GENERATOR (jsPDF)
+// ═══════════════════════════════════════════════════════════════
+const THEMES_PDF = {
+  'premium-blue':{
+    bg:[8,12,32],surface:[14,22,64],accent:[59,130,246],accentLight:[147,197,253],
+    text:[232,237,248],textMuted:[148,163,184],coverTitle:[255,255,255],
+    lineColor:[30,42,110],boxBg:[20,30,80],
+  },
+  'minimal-white':{
+    bg:[250,251,255],surface:[241,245,254],accent:[37,99,235],accentLight:[37,99,235],
+    text:[17,24,39],textMuted:[107,114,128],coverTitle:[17,24,39],
+    lineColor:[219,234,254],boxBg:[239,246,255],
+  },
+  'dark-elegant':{
+    bg:[10,10,18],surface:[18,18,30],accent:[168,85,247],accentLight:[216,180,254],
+    text:[226,232,240],textMuted:[148,163,184],coverTitle:[255,255,255],
+    lineColor:[40,40,64],boxBg:[24,24,40],
+  }
+}
+
+function generatePDF(docData, themeKey) {
+  const {jsPDF} = window.jspdf
+  const doc = new jsPDF({orientation:'portrait',unit:'mm',format:'a4'})
+  const T = THEMES_PDF[themeKey] || THEMES_PDF['premium-blue']
+  const W=210, H=297, M=20, CW=170
+  let y=M, page=1
+
+  const fill = c=>doc.setFillColor(c[0],c[1],c[2])
+  const stroke = c=>doc.setDrawColor(c[0],c[1],c[2])
+  const tc = c=>doc.setTextColor(c[0],c[1],c[2])
+
+  function footer() {
+    stroke(T.lineColor); doc.setLineWidth(.3)
+    doc.line(M,H-16,W-M,H-16)
+    doc.setFontSize(7); tc(T.textMuted)
+    doc.setFont('helvetica','normal')
+    doc.text('Javier Manzano Fitness · "La clave está en el equilibrio"',M,H-10)
+    doc.text(String(page),W-M,H-10,{align:'right'})
+  }
+
+  function pageHeader(title) {
+    stroke(T.accent); doc.setLineWidth(.4)
+    doc.line(M,12,W-M,12)
+    doc.setFontSize(7); tc(T.textMuted); doc.setFont('helvetica','normal')
+    doc.text((title||'').toUpperCase(),M,10)
+    doc.text('JAVIER MANZANO FITNESS',W-M,10,{align:'right'})
+  }
+
+  function newPage(title) {
+    footer(); doc.addPage(); page++; y=M+10
+    pageHeader(title); y+=10
+  }
+
+  function checkSpace(needed) {
+    if (y+needed > H-28) newPage(docData.title)
+  }
+
+  // ── COVER ──
+  fill(T.bg); doc.rect(0,0,W,H,'F')
+  fill(T.accent); doc.rect(0,0,W,3,'F')
+  fill(T.surface); doc.rect(0,0,12,H,'F')
+  fill(T.accent); doc.rect(0,80,12,60,'F')
+
+  doc.setFont('helvetica','bold'); doc.setFontSize(8); tc(T.textMuted)
+  doc.text(docData.brandName||'JAVIER MANZANO FITNESS',W-M,16,{align:'right'})
+
+  const ty=90
+  doc.setFont('helvetica','bold'); doc.setFontSize(30); tc(T.coverTitle)
+  const tlines=doc.splitTextToSize(docData.title||'Documento',CW-10)
+  doc.text(tlines,M+16,ty)
+  const ly=ty+tlines.length*11+3
+  fill(T.accent); doc.rect(M+16,ly,50,1,'F')
+
+  if (docData.subtitle) {
+    doc.setFont('helvetica','normal'); doc.setFontSize(13); tc(T.accentLight)
+    doc.text(docData.subtitle,M+16,ly+10)
+  }
+
+  if (docData.clientName) {
+    const cy=ly+28; fill(T.surface)
+    doc.roundedRect(M+16,cy,80,18,3,3,'F')
+    doc.setFont('helvetica','normal'); doc.setFontSize(8); tc(T.textMuted)
+    doc.text('PREPARADO PARA',M+24,cy+6)
+    doc.setFont('helvetica','bold'); doc.setFontSize(11); tc(T.text)
+    doc.text(docData.clientName,M+24,cy+13)
+  }
+
+  const dY=H-50; doc.setFont('helvetica','normal'); doc.setFontSize(9); tc(T.textMuted)
+  doc.text(docData.date||'',M+16,dY)
+  doc.setFont('helvetica','italic'); doc.setFontSize(10); tc(T.accentLight)
+  doc.text('"'+(docData.tagline||'La clave está en el equilibrio')+'"',M+16,dY+8)
+
+  fill(T.accent); doc.rect(0,H-14,W,14,'F')
+  doc.setFont('helvetica','bold'); doc.setFontSize(9)
+  doc.setTextColor(255,255,255)
+  doc.text(docData.brandName||'JAVIER MANZANO FITNESS',W/2,H-5.5,{align:'center'})
+
+  // ── CONTENT PAGES ──
+  doc.addPage(); page++; y=M; pageHeader(docData.title); y+=14
+
+  const intro = docData.sections.find(s=>s.isIntro||!s.title)
+  const mains = docData.sections.filter(s=>!s.isIntro&&s.title)
+
+  function drawSection(title, content) {
+    if (!content&&!title) return
+    const lines = content ? doc.splitTextToSize(content, CW-6) : []
+    const needed = (title?14:0) + lines.length*5.5 + 14
+    checkSpace(needed)
+
+    if (title) {
+      fill(T.accent); doc.rect(M,y,3,7,'F')
+      doc.setFont('helvetica','bold'); doc.setFontSize(13); tc(T.text)
+      doc.text(title,M+7,y+5.5)
+      y+=11; stroke(T.lineColor); doc.setLineWidth(.25)
+      doc.line(M,y,W-M,y); y+=5
+    }
+    if (lines.length>0) {
+      doc.setFont('helvetica','normal'); doc.setFontSize(10); tc(T.text)
+      for (const line of lines) {
+        checkSpace(6); doc.text(line,M+4,y); y+=5.5
+      }
+    }
+    y+=10
+  }
+
+  if (intro?.content) drawSection('Introducción', intro.content)
+  for (const s of mains) drawSection(s.title, s.content)
+
+  // ── CLOSING PAGE ──
+  newPage(docData.title)
+  fill(T.accent); doc.rect(M,y,3,9,'F')
+  doc.setFont('helvetica','bold'); doc.setFontSize(16); tc(T.text)
+  doc.text('Mensaje Final',M+8,y+7); y+=18
+
+  const closing = docData.closingMessage ||
+    'Gracias por confiar en este proceso. El camino hacia una salud integral comienza con pequeñas decisiones consistentes. Estoy aquí para acompañarte en cada paso.'
+  doc.setFont('helvetica','normal'); doc.setFontSize(10); tc(T.text)
+  const cl=doc.splitTextToSize(closing,CW-6)
+  doc.text(cl,M+4,y); y+=cl.length*6+14
+
+  fill(T.surface); doc.roundedRect(M,y,CW,22,4,4,'F')
+  doc.setFont('helvetica','bold'); doc.setFontSize(13); tc(T.accentLight)
+  doc.text('"'+(docData.tagline||'La clave está en el equilibrio')+'"',W/2,y+13,{align:'center'})
+  y+=32
+
+  if (docData.contact) {
+    doc.setFont('helvetica','normal'); doc.setFontSize(9); tc(T.textMuted)
+    doc.text(docData.contact,M,y); y+=8
+  }
+
+  fill(T.accent); doc.rect(0,H-14,W,14,'F')
+  doc.setFont('helvetica','bold'); doc.setFontSize(9)
+  doc.setTextColor(255,255,255)
+  doc.text(docData.brandName||'JAVIER MANZANO FITNESS',W/2,H-5.5,{align:'center'})
+  footer()
+
+  return doc
+}
+
+// ═══════════════════════════════════════════════════════════════
+// THEME UI DEFINITIONS
+// ═══════════════════════════════════════════════════════════════
+const THEMES_UI = {
+  'premium-blue':{ bg:'#080c20',surface:'#0e1640',accent:'#3b82f6',accentLight:'#93c5fd',text:'#e8edf8',muted:'#94a3b8',border:'#1e2a6e',label:'Premium Azul',dots:['#080c20','#3b82f6','#e8edf8'] },
+  'minimal-white':{ bg:'#fafbff',surface:'#f1f5fe',accent:'#2563eb',accentLight:'#2563eb',text:'#111827',muted:'#6b7280',border:'#dbeafe',label:'Minimalista Blanco',dots:['#fafbff','#2563eb','#111827'] },
+  'dark-elegant':{ bg:'#0a0a12',surface:'#12121e',accent:'#a855f7',accentLight:'#d8b4fe',text:'#e2e8f0',muted:'#94a3b8',border:'#282840',label:'Oscuro Elegante',dots:['#0a0a12','#a855f7','#e2e8f0'] },
+}
+
+// ═══════════════════════════════════════════════════════════════
+// RENDER ENGINE
+// ═══════════════════════════════════════════════════════════════
+function render() {
+  renderStepBar()
+  const app = document.getElementById('app')
+  const screens = {
+    upload: renderUpload,
+    extract: renderExtract,
+    edit: renderEdit,
+    preview: renderPreview,
+  }
+  app.innerHTML = ''
+  const el = (screens[state.step] || renderUpload)()
+  app.appendChild(el)
+  bindEvents()
+}
+
+function el(tag, attrs={}, ...children) {
+  const e = document.createElement(tag)
+  for (const [k,v] of Object.entries(attrs)) {
+    if (k==='class') e.className=v
+    else if (k==='style') e.style.cssText=v
+    else if (k.startsWith('data-')) e.setAttribute(k,v)
+    else e[k]=v
+  }
+  for (const c of children) {
+    if (c===null||c===undefined) continue
+    e.appendChild(typeof c==='string' ? document.createTextNode(c) : c)
+  }
+  return e
+}
+
+function html(tag, attrs={}, innerHTML='') {
+  const e = document.createElement(tag)
+  for (const [k,v] of Object.entries(attrs)) {
+    if (k==='class') e.className=v
+    else if (k==='style') e.style.cssText=v
+    else e[k]=v
+  }
+  e.innerHTML = innerHTML
+  return e
+}
+
+// ── Step bar ────────────────────────────────────────────────────
+function renderStepBar() {
+  const bar = document.getElementById('stepbar')
+  if (state.step==='upload') { bar.style.display='none'; return }
+  bar.style.display='flex'
+  const steps=['upload','extract','edit','preview']
+  const labels={upload:'Subir PDF',extract:'Extracción',edit:'Editor',preview:'Vista Previa'}
+  const ci=steps.indexOf(state.step)
+  bar.innerHTML=''
+  steps.forEach((s,i)=>{
+    const done=i<ci, active=s===state.step, reachable=i<=ci
+    const numClass=active?'active':done?'done':'pending'
+    const btnClass='step-btn'+(active?' active':done?' done':'')
+    const b=html('button',{class:btnClass,disabled:!reachable},
+      `<span class="step-num ${numClass}">${done?'✓':i+1}</span><span class="hidden-xs">${labels[s]}</span>`)
+    if (reachable) b.onclick=()=>setState({step:s})
+    bar.appendChild(b)
+    if (i<3) {
+      const d=document.createElement('div')
+      d.className='step-div'+(done?' done':'')
+      bar.appendChild(d)
+    }
+  })
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SCREEN: UPLOAD
+// ═══════════════════════════════════════════════════════════════
+function renderUpload() {
+  const wrap = el('div',{class:'fade-in',style:'padding-top:32px'})
+
+  // Hero
+  const hero = el('div',{class:'text-center mb-8'})
+  hero.innerHTML=`
+    <div style="display:inline-flex;align-items:center;gap:8px;background:rgba(37,99,235,0.12);border:1px solid rgba(37,99,235,0.25);padding:5px 14px;border-radius:20px;font-size:11px;font-weight:600;color:#93c5fd;margin-bottom:20px">
+      <div class="pulse"></div>Herramienta profesional · 100% local
+    </div>
+    <h1 style="font-size:clamp(28px,6vw,46px);font-weight:700;line-height:1.15;color:#fff;margin-bottom:12px">
+      PDF Premium<br><span class="gradient-text">Converter</span>
+    </h1>
+    <p style="font-size:15px;color:rgba(255,255,255,0.45);max-width:480px;margin:0 auto;line-height:1.6">
+      Convierte documentos básicos en PDFs profesionales listos para clientes.<br>
+      <span style="font-size:12px;color:rgba(255,255,255,0.25)">Sin inventar contenido · Solo mejora presentación y estructura.</span>
+    </p>`
+  wrap.appendChild(hero)
+
+  // Drop zone
+  const dz = el('div',{class:'drop-zone',id:'dropzone',style:'margin-bottom:16px'})
+  dz.innerHTML=`
+    <div id="dz-idle">
+      <div style="width:58px;height:58px;border-radius:16px;background:rgba(37,99,235,0.12);border:1px solid rgba(37,99,235,0.2);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:24px">📄</div>
+      <p style="font-size:16px;font-weight:600;color:#fff;margin-bottom:6px">Arrastra tu PDF aquí</p>
+      <p style="font-size:13px;color:rgba(255,255,255,0.35);margin-bottom:16px">o haz clic para seleccionar · Máx. 25MB</p>
+      <button class="btn btn-primary" id="select-btn">⬆ Seleccionar PDF</button>
+    </div>
+    <div id="dz-loading" style="display:none">
+      <div class="spinner spinner-blue" style="margin:0 auto 12px;width:32px;height:32px;border-width:3px"></div>
+      <p style="color:#93c5fd;font-weight:500;margin-bottom:4px" id="progress-text">Leyendo el PDF...</p>
+      <p style="font-size:12px;color:rgba(255,255,255,0.3)">Procesando en tu navegador</p>
+    </div>`
+  wrap.appendChild(dz)
+
+  const errDiv=el('div',{id:'upload-error',style:'display:none'})
+  errDiv.className='alert alert-error'
+  wrap.appendChild(errDiv)
+
+  // Info
+  const info=html('div',{class:'alert alert-info'},
+    `<span style="font-size:15px;flex-shrink:0">ℹ️</span><span><strong style="color:#bfdbfe">Todo el procesamiento ocurre en tu navegador.</strong> Ningún archivo se envía a ningún servidor. La app trabaja exclusivamente con el contenido original del PDF.</span>`)
+  wrap.appendChild(info)
+
+  // How it works
+  const howto=el('div',{class:'howto-grid'})
+  ;[
+    {n:'01',icon:'📄',t:'Sube tu PDF',d:'Extracción directa del texto, sin servidores.'},
+    {n:'02',icon:'✏️',t:'Optimiza y edita',d:'Reordena secciones y personaliza metadatos.'},
+    {n:'03',icon:'⬇️',t:'Descarga premium',d:'PDF elegante con tu marca, listo para clientes.'},
+  ].forEach(s=>{
+    howto.appendChild(html('div',{class:'howto-card'},
+      `<div class="howto-icon">${s.icon}</div><div class="howto-n">${s.n}</div><p style="font-size:13px;font-weight:600;color:#fff;margin-bottom:4px">${s.t}</p><p style="font-size:11px;color:rgba(255,255,255,0.35);line-height:1.5">${s.d}</p>`))
+  })
+  wrap.appendChild(howto)
+
+  return wrap
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SCREEN: EXTRACT
+// ═══════════════════════════════════════════════════════════════
+function renderExtract() {
+  const wrap = el('div',{class:'fade-in',style:'padding-top:20px'})
+
+  wrap.appendChild(backBtn('upload'))
+
+  const heading=html('div',{class:'mb-6'},
+    `<h2 style="font-size:22px;font-weight:700;color:#fff">Extracción completada</h2><p class="text-muted text-sm mt-2">Revisa el contenido antes de continuar</p>`)
+  wrap.appendChild(heading)
+
+  // Stats
+  const wc=state.rawText.split(/\s+/).filter(Boolean).length
+  const stats=el('div',{class:'stats-grid mb-6'})
+  ;[
+    {l:'Archivo',v:state.filename.replace('.pdf','').substring(0,16)||'—',s:'.pdf'},
+    {l:'Palabras',v:wc.toLocaleString(),s:'extraídas'},
+    {l:'Secciones',v:state.sections.length,s:'detectadas'},
+    {l:'Estado',v:'✓',s:'Listo',accent:true},
+  ].forEach(st=>{
+    const c=el('div',{class:'stat-card glass'+(st.accent?' glass-blue':'')})
+    c.innerHTML=`<div class="stat-label">${st.l}</div><div class="stat-value" style="color:${st.accent?'#93c5fd':'#fff'}">${st.v}</div><div class="stat-sub">${st.s}</div>`
+    stats.appendChild(c)
+  })
+  wrap.appendChild(stats)
+
+  // Notice
+  wrap.appendChild(html('div',{class:'alert alert-info mb-4'},
+    `<span style="font-size:15px;flex-shrink:0">ℹ️</span><span>La app ha detectado automáticamente la estructura. <strong style="color:#bfdbfe">No se ha añadido ningún contenido nuevo.</strong></span>`))
+
+  // View toggle
+  const viewState={v:'structured'}
+  const toggleWrap=el('div',{class:'flex gap-2 mb-3'})
+  const btnS=html('button',{class:'btn btn-sm'+(viewState.v==='structured'?' btn-primary':' btn-secondary')},'Vista estructurada')
+  const btnR=html('button',{class:'btn btn-sm'+(viewState.v==='raw'?' btn-primary':' btn-secondary')},'Texto original')
+  toggleWrap.appendChild(btnS); toggleWrap.appendChild(btnR)
+  wrap.appendChild(toggleWrap)
+
+  const contentArea=el('div',{class:'glass overflow-auto max-h-400',style:'border-radius:14px;margin-bottom:20px'})
+  function renderContent() {
+    if (viewState.v==='raw') {
+      contentArea.innerHTML=`<pre style="padding:20px;font-size:11px;color:rgba(255,255,255,0.5);white-space:pre-wrap;font-family:monospace;line-height:1.6">${escHtml(state.rawText.substring(0,6000)+(state.rawText.length>6000?'\n\n[... texto truncado en vista previa ...]':''))}</pre>`
+    } else {
+      const inner=el('div',{style:'padding:20px'})
+      if (!state.sections.length) {
+        inner.innerHTML='<p style="text-align:center;color:rgba(255,255,255,0.3);padding:40px 0;font-size:13px">No se detectaron secciones.</p>'
+      } else {
+        state.sections.forEach(s=>{
+          const row=el('div',{style:'border-left:2px solid rgba(59,130,246,0.3);padding-left:14px;margin-bottom:20px'})
+          if (s.title) row.appendChild(html('p',{style:'color:#93c5fd;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px'},escHtml(s.title)))
+          else row.appendChild(html('p',{style:'color:rgba(255,255,255,0.25);font-size:11px;font-style:italic;margin-bottom:4px'},'Introducción'))
+          row.appendChild(html('p',{style:'font-size:12px;color:rgba(255,255,255,0.6);line-height:1.6'},escHtml((s.content||'').substring(0,300)+(s.content?.length>300?'...':''))))
+          inner.appendChild(row)
+        })
+      }
+      contentArea.innerHTML=''; contentArea.appendChild(inner)
+    }
+  }
+  renderContent()
+  btnS.onclick=()=>{viewState.v='structured';btnS.className='btn btn-sm btn-primary';btnR.className='btn btn-sm btn-secondary';renderContent()}
+  btnR.onclick=()=>{viewState.v='raw';btnR.className='btn btn-sm btn-primary';btnS.className='btn btn-sm btn-secondary';renderContent()}
+  wrap.appendChild(contentArea)
+
+  // Actions
+  const actions=el('div',{class:'flex justify-between'})
+  const bk=html('button',{class:'btn btn-secondary'},'← Volver')
+  bk.onclick=()=>setState({step:'upload'})
+  const nx=html('button',{class:'btn btn-primary',disabled:!state.sections.length},'Continuar al Editor →')
+  nx.onclick=()=>setState({step:'edit'})
+  actions.appendChild(bk); actions.appendChild(nx)
+  wrap.appendChild(actions)
+
+  return wrap
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SCREEN: EDIT
+// ═══════════════════════════════════════════════════════════════
+function renderEdit() {
+  const wrap = el('div',{class:'fade-in',style:'padding-top:20px'})
+  wrap.appendChild(backBtn('extract'))
+
+  const topRow=el('div',{class:'flex justify-between items-center mb-5'})
+  topRow.appendChild(html('div','',`<h2 style="font-size:22px;font-weight:700;color:#fff">Editor del documento</h2><p class="text-muted text-sm mt-2">${state.sections.length} secciones · Edita, reordena o elimina</p>`))
+  const previewBtn=html('button',{class:'btn btn-primary'},'👁 Vista previa')
+  previewBtn.onclick=()=>setState({step:'preview'})
+  topRow.appendChild(previewBtn)
+  wrap.appendChild(topRow)
+
+  // Tabs
+  const tabs=el('div',{class:'tabs'})
+  ;['sections','meta','theme'].forEach(t=>{
+    const labels={sections:'Secciones',meta:'Metadatos',theme:'Estilo visual'}
+    const btn=html('button',{class:'tab'+(state.activeTab===t?' active':'')},labels[t])
+    btn.onclick=()=>setState({activeTab:t})
+    tabs.appendChild(btn)
+  })
+  wrap.appendChild(tabs)
+
+  // Tab content
+  if (state.activeTab==='sections') wrap.appendChild(renderSectionsTab())
+  else if (state.activeTab==='meta') wrap.appendChild(renderMetaTab())
+  else wrap.appendChild(renderThemeTab())
+
+  // Bottom actions
+  const bottom=el('div',{class:'flex justify-between items-center border-top mt-6'})
+  const bk=html('button',{class:'btn btn-secondary'},'← Volver')
+  bk.onclick=()=>setState({step:'extract'})
+  const nx=html('button',{class:'btn btn-primary'},'Vista previa y descarga →')
+  nx.onclick=()=>setState({step:'preview'})
+  bottom.appendChild(bk); bottom.appendChild(nx)
+  wrap.appendChild(bottom)
+
+  return wrap
+}
+
+function renderSectionsTab() {
+  const wrap=el('div',{class:'slide-up'})
+
+  if (!state.sections.length) {
+    wrap.appendChild(html('div',{class:'glass text-center',style:'padding:60px 20px;border-radius:14px;margin-bottom:12px'},'<p style="color:rgba(255,255,255,0.3);font-size:13px">No hay secciones. Añade una manualmente.</p>'))
+  } else {
+    state.sections.forEach((s,i)=>{
+      if (state.editingId===s.id) {
+        const editor=el('div',{class:'section-editor'})
+        const topE=el('div',{class:'flex justify-between items-center mb-3'})
+        topE.appendChild(html('span',{style:'font-size:11px;color:#93c5fd;font-weight:600;text-transform:uppercase;letter-spacing:.08em'},'Editando sección'))
+        const doneBtn=html('button',{class:'btn btn-sm btn-primary'},'✓ Hecho')
+        doneBtn.onclick=()=>setState({editingId:null})
+        topE.appendChild(doneBtn)
+        editor.appendChild(topE)
+
+        const titleLabel=el('label')
+        titleLabel.textContent='Título de la sección'
+        const titleInput=html('input',{type:'text',value:s.title||'',placeholder:'Título (vacío = sin título)'})
+        titleInput.oninput=e=>updateSection(s.id,'title',e.target.value)
+        editor.appendChild(titleLabel); editor.appendChild(titleInput)
+
+        const contentLabel=el('label',{style:'margin-top:12px'})
+        contentLabel.textContent='Contenido'
+        const contentTA=html('textarea',{rows:7,placeholder:'Contenido de esta sección...'},escHtml(s.content||''))
+        contentTA.value=s.content||''
+        contentTA.oninput=e=>updateSection(s.id,'content',e.target.value)
+        editor.appendChild(contentLabel); editor.appendChild(contentTA)
+        wrap.appendChild(editor)
+      } else {
+        const row=el('div',{class:'section-row','data-id':s.id,draggable:true})
+        row.innerHTML=`
+          <div class="drag-handle" title="Arrastrar">⠿</div>
+          <div class="section-num">${i+1}</div>
+          <div class="section-info">
+            <div class="section-title-text">${escHtml(s.title)||'<span style="color:rgba(255,255,255,0.25);font-style:italic">Sin título</span>'}</div>
+            <div class="section-preview">${escHtml((s.content||'').substring(0,70))||'Sin contenido'}</div>
+          </div>
+          <div class="section-actions">
+            <button class="btn btn-icon btn-secondary sec-up" data-id="${s.id}" title="Subir" ${i===0?'disabled':''}>↑</button>
+            <button class="btn btn-icon btn-secondary sec-dn" data-id="${s.id}" title="Bajar" ${i===state.sections.length-1?'disabled':''}>↓</button>
+            <button class="btn btn-icon sec-edit" data-id="${s.id}" style="background:rgba(37,99,235,0.15);color:#93c5fd" title="Editar">✏</button>
+            <button class="btn btn-icon btn-danger sec-del" data-id="${s.id}" title="Eliminar">🗑</button>
+          </div>`
+        // Drag events
+        row.ondragstart=e=>{state.dragSrc=s.id;row.classList.add('dragging');e.dataTransfer.effectAllowed='move'}
+        row.ondragend=()=>{state.dragSrc=null;document.querySelectorAll('.section-row').forEach(r=>r.classList.remove('dragging','drag-over'))}
+        row.ondragover=e=>{e.preventDefault();if(state.dragSrc!==s.id)row.classList.add('drag-over')}
+        row.ondragleave=()=>row.classList.remove('drag-over')
+        row.ondrop=e=>{
+          e.preventDefault(); row.classList.remove('drag-over')
+          if (!state.dragSrc||state.dragSrc===s.id) return
+          const secs=[...state.sections]
+          const from=secs.findIndex(x=>x.id===state.dragSrc)
+          const to=secs.findIndex(x=>x.id===s.id)
+          const [m]=secs.splice(from,1); secs.splice(to,0,m)
+          setState({sections:secs,dragSrc:null})
+        }
+        wrap.appendChild(row)
+      }
+    })
+  }
+
+  const addBtn=html('button',{class:'btn btn-secondary w-full',style:'justify-content:center;margin-top:8px'},'+ Añadir sección')
+  addBtn.onclick=()=>{
+    const ns={id:genId(),title:'Nueva sección',content:'',isIntro:false}
+    setState({sections:[...state.sections,ns],editingId:ns.id})
+  }
+  wrap.appendChild(addBtn)
+  return wrap
+}
+
+function renderMetaTab() {
+  const wrap=el('div',{class:'slide-up'})
+  const g=el('div',{class:'grid-2'})
+
+  const fields=[
+    {key:'title',label:'Título del documento',placeholder:'Plan de Entrenamiento...'},
+    {key:'subtitle',label:'Subtítulo',placeholder:'Plan Nutricional / Guía...'},
+    {key:'clientName',label:'Nombre del cliente',placeholder:'Nombre Apellido'},
+    {key:'date',label:'Fecha',placeholder:'Junio 2025'},
+    {key:'brandName',label:'Nombre de marca (portada)',placeholder:'JAVIER MANZANO FITNESS'},
+    {key:'tagline',label:'Frase de marca',placeholder:'La clave está en el equilibrio'},
+  ]
+  fields.forEach(f=>{
+    const d=el('div')
+    const lbl=el('label'); lbl.textContent=f.label
+    const inp=html('input',{type:'text',value:state.meta[f.key]||'',placeholder:f.placeholder})
+    inp.oninput=e=>{state.meta[f.key]=e.target.value}
+    d.appendChild(lbl); d.appendChild(inp); g.appendChild(d)
+  })
+  wrap.appendChild(g)
+
+  // Contact (full width)
+  const dc=el('div',{style:'margin-top:14px'})
+  const lc=el('label'); lc.textContent='Contacto (última página)'
+  const ic=html('input',{type:'text',value:state.meta.contact||'',placeholder:'@javiermanzanofitness · web...'})
+  ic.oninput=e=>{state.meta.contact=e.target.value}
+  dc.appendChild(lc); dc.appendChild(ic); wrap.appendChild(dc)
+
+  // Closing message (full width)
+  const dm=el('div',{style:'margin-top:14px'})
+  const lm=el('label'); lm.textContent='Mensaje de cierre personalizado'
+  const ta=html('textarea',{rows:3,placeholder:'Gracias por confiar en este proceso...'},state.meta.closingMessage||'')
+  ta.value=state.meta.closingMessage||''
+  ta.oninput=e=>{state.meta.closingMessage=e.target.value}
+  const hint=html('p',{style:'font-size:11px;color:rgba(255,255,255,0.25);margin-top:5px'},'Opcional — si está vacío se usa un mensaje profesional por defecto.')
+  dm.appendChild(lm); dm.appendChild(ta); dm.appendChild(hint); wrap.appendChild(dm)
+
+  return wrap
+}
+
+function renderThemeTab() {
+  const wrap=el('div',{class:'slide-up'})
+  wrap.appendChild(html('p',{class:'text-muted text-sm mb-4'},'Elige el estilo visual del PDF generado:'))
+  const g=el('div',{class:'grid-3'})
+  Object.entries(THEMES_UI).forEach(([key,t])=>{
+    const card=el('button',{class:'theme-card'+(state.theme===key?' selected':'')})
+    const dots=el('div',{class:'theme-dots'})
+    t.dots.forEach(c=>{
+      const d=el('div',{class:'theme-dot',style:`background:${c};border:1px solid rgba(255,255,255,0.1)`})
+      dots.appendChild(d)
+    })
+    card.appendChild(dots)
+    const row=el('div',{class:'flex justify-between items-start'})
+    const info=el('div')
+    info.appendChild(html('p',{style:'font-size:13px;font-weight:600;color:#fff;margin-bottom:3px'},t.label))
+    row.appendChild(info)
+    if (state.theme===key) row.appendChild(html('div',{style:'width:18px;height:18px;border-radius:50%;background:#2563eb;display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0'},'✓'))
+    card.appendChild(row)
+    card.onclick=()=>setState({theme:key})
+    g.appendChild(card)
+  })
+  wrap.appendChild(g)
+  return wrap
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SCREEN: PREVIEW
+// ═══════════════════════════════════════════════════════════════
+function renderPreview() {
+  const wrap=el('div',{class:'fade-in',style:'padding-top:20px'})
+  wrap.appendChild(backBtn('edit'))
+
+  const T=THEMES_UI[state.theme]||THEMES_UI['premium-blue']
+
+  const topRow=el('div',{class:'flex justify-between items-center mb-5'})
+  const titleInfo=el('div')
+  titleInfo.appendChild(html('h2',{style:'font-size:22px;font-weight:700;color:#fff'},'Vista previa y descarga'))
+  titleInfo.appendChild(html('p',{class:'text-sm mt-2'},`<span class="text-muted">Tema: </span><span style="color:${T.accent}">${T.label}</span>${state.meta.clientName?` · <span class="text-muted">Cliente: </span><span style="color:rgba(255,255,255,0.7)">${escHtml(state.meta.clientName)}</span>`:''}` ))
+  topRow.appendChild(titleInfo)
+
+  const dlBtn=html('button',{class:'btn btn-primary',id:'dl-btn',style:'font-size:15px;padding:12px 28px'},'⬇ Descargar PDF')
+  dlBtn.onclick=handleDownload
+  topRow.appendChild(dlBtn)
+  wrap.appendChild(topRow)
+
+  const successDiv=html('div',{id:'dl-success',class:'alert alert-success',style:'display:none'},
+    '✅  ¡PDF generado y descargado! Revisa tu carpeta de descargas.')
+  wrap.appendChild(successDiv)
+
+  // Document visual preview
+  const previewWrap=el('div',{class:'flex justify-center'})
+  const previewInner=el('div',{style:'width:100%;max-width:600px'})
+
+  // Cover
+  const cover=el('div',{class:'pdf-preview',style:`background:${T.bg};margin-bottom:14px;border:1px solid ${T.border}`})
+  const topStrip=el('div',{style:`height:3px;background:${T.accent}`})
+  cover.appendChild(topStrip)
+  const coverBody=el('div',{class:'pdf-cover'})
+  const bar=el('div',{class:'pdf-cover-bar',style:`background:${T.surface}`})
+  const barTop=el('div',{style:'flex:1'})
+  const barAccent=el('div',{class:'pdf-cover-bar-accent',style:`background:${T.accent}`})
+  const barBot=el('div',{style:'flex:1'})
+  bar.appendChild(barTop); bar.appendChild(barAccent); bar.appendChild(barBot)
+  const coverContent=el('div',{class:'pdf-cover-content'})
+  coverContent.innerHTML=`
+    <div class="pdf-cover-brand" style="color:${T.muted}">${escHtml(state.meta.brandName||'JAVIER MANZANO FITNESS')}</div>
+    <div class="pdf-cover-title" style="color:${T.text}">${escHtml(state.meta.title||'Documento Premium')}</div>
+    <div class="pdf-cover-line" style="background:${T.accent}"></div>
+    ${state.meta.subtitle?`<div class="pdf-cover-subtitle" style="color:${T.accentLight}">${escHtml(state.meta.subtitle)}</div>`:''}
+    ${state.meta.clientName?`<div class="pdf-cover-client" style="background:${T.surface}"><div class="pdf-cover-client-label" style="color:${T.muted}">PREPARADO PARA</div><div class="pdf-cover-client-name" style="color:${T.text}">${escHtml(state.meta.clientName)}</div></div>`:''}
+    <div class="pdf-cover-bottom" style="border-color:${T.border}">
+      <div class="pdf-cover-date" style="color:${T.muted}">${escHtml(state.meta.date)}</div>
+      <div class="pdf-cover-tagline" style="color:${T.accentLight}">"${escHtml(state.meta.tagline||'La clave está en el equilibrio')}"</div>
+    </div>`
+  coverBody.appendChild(bar); coverBody.appendChild(coverContent)
+  cover.appendChild(coverBody)
+  cover.appendChild(el('div',{class:'pdf-brand-strip',style:`background:${T.accent}`},state.meta.brandName||'JAVIER MANZANO FITNESS'))
+  previewInner.appendChild(cover)
+
+  // Content page
+  const cp=el('div',{class:'pdf-preview',style:`background:${T.bg};margin-bottom:14px;border:1px solid ${T.border}`})
+  const ph=el('div',{class:'pdf-page-header',style:`border-color:${T.border}`})
+  ph.appendChild(html('p',{style:`color:${T.muted}`},(state.meta.title||'').toUpperCase()))
+  ph.appendChild(html('p',{style:`color:${T.muted}`},'JAVIER MANZANO FITNESS'))
+  cp.appendChild(ph)
+  const pc=el('div',{class:'pdf-content'})
+  const preview=state.sections.slice(0,5)
+  if (!preview.length) {
+    pc.appendChild(html('p',{style:`color:${T.muted};text-align:center;padding:30px 0;font-size:13px`},'Sin secciones · Vuelve al editor'))
+  } else {
+    preview.forEach((s,i)=>{
+      const sd=el('div',{class:'pdf-section'})
+      if (s.title) {
+        const sh=el('div',{class:'pdf-section-title'})
+        sh.appendChild(el('div',{class:'pdf-section-bar',style:`background:${T.accent}`}))
+        sh.appendChild(html('p',{class:'pdf-section-text',style:`color:${T.text}`},escHtml(s.title)))
+        sd.appendChild(sh)
+      }
+      if (s.content) sd.appendChild(html('p',{class:'pdf-body',style:`color:${T.muted}`},escHtml(s.content.substring(0,200)+(s.content.length>200?'...':''))))
+      cp.appendChild(sd)
+      if (i<preview.length-1) cp.appendChild(el('div',{class:'pdf-divider',style:`background:${T.border}`}))
+    })
+    if (state.sections.length>5) cp.appendChild(html('p',{style:`text-align:center;color:${T.muted};font-size:11px;margin-top:10px`},`+ ${state.sections.length-5} secciones más en el PDF final`))
+  }
+  cp.appendChild(pc)
+  const pf=el('div',{class:'pdf-footer',style:`border-color:${T.border}`})
+  pf.appendChild(html('p',{style:`color:${T.muted}`},'Javier Manzano Fitness · "La clave está en el equilibrio"'))
+  pf.appendChild(html('p',{style:`color:${T.muted}`},'2'))
+  cp.appendChild(pf)
+  previewInner.appendChild(cp)
+
+  // Closing
+  const cl=el('div',{class:'pdf-preview',style:`background:${T.bg};border:1px solid ${T.border};padding:28px;text-align:center`})
+  cl.innerHTML=`
+    <p style="font-size:15px;font-weight:700;color:${T.text};margin-bottom:10px">Mensaje Final</p>
+    <p style="font-size:12px;line-height:1.7;color:${T.muted};max-width:420px;margin:0 auto 16px">${escHtml(state.meta.closingMessage||'Gracias por confiar en este proceso. El camino hacia una salud integral comienza con pequeñas decisiones consistentes.')}</p>
+    <div style="display:inline-block;background:${T.surface};padding:12px 20px;border-radius:10px;margin-bottom:14px">
+      <p style="font-size:13px;font-style:italic;font-weight:600;color:${T.accentLight}">"${escHtml(state.meta.tagline||'La clave está en el equilibrio')}"</p>
+    </div>
+    ${state.meta.contact?`<p style="font-size:11px;color:${T.muted};margin-top:10px">${escHtml(state.meta.contact)}</p>`:''}
+    <div class="pdf-brand-strip" style="background:${T.accent};margin:16px -28px -28px;border-radius:0 0 12px 12px">${escHtml(state.meta.brandName||'JAVIER MANZANO FITNESS')}</div>`
+  previewInner.appendChild(cl)
+
+  previewWrap.appendChild(previewInner)
+  wrap.appendChild(previewWrap)
+
+  // Bottom CTA
+  const btm=el('div',{class:'text-center',style:'margin-top:32px;padding-top:24px;border-top:1px solid rgba(255,255,255,0.06)'})
+  btm.appendChild(html('p',{class:'text-muted text-sm mb-3'},'¿Todo listo? Genera y descarga tu PDF premium.'))
+  const dl2=html('button',{class:'btn btn-primary',id:'dl-btn2',style:'font-size:15px;padding:14px 36px;margin-bottom:10px'},'⬇ Descargar PDF Premium')
+  dl2.onclick=handleDownload
+  btm.appendChild(dl2)
+  btm.appendChild(html('p',{style:'font-size:11px;color:rgba(255,255,255,0.2)'},'Procesamiento 100% local · Ningún dato sale de tu navegador'))
+  wrap.appendChild(btm)
+
+  return wrap
+}
+
+// ═══════════════════════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════════════════════
+function backBtn(target) {
+  const b=html('button',{class:'back-link'},'← Volver')
+  b.onclick=()=>setState({step:target})
+  return b
+}
+
+function escHtml(s='') {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')
+}
+
+function updateSection(id, field, value) {
+  state.sections=state.sections.map(s=>s.id===id?{...s,[field]:value}:s)
+}
+
+async function handleDownload() {
+  const btns=['dl-btn','dl-btn2'].map(id=>document.getElementById(id)).filter(Boolean)
+  btns.forEach(b=>{b.disabled=true;b.innerHTML='<div class="spinner" style="width:16px;height:16px;border-width:2px;flex-shrink:0"></div> Generando...'})
+  try {
+    await new Promise(r=>setTimeout(r,100))
+    const doc=generatePDF({...state.meta,sections:state.sections},state.theme)
+    const fname=(state.meta.title||'documento-premium').toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'')
+    doc.save(fname+'.pdf')
+    const s=document.getElementById('dl-success')
+    if (s) s.style.display='flex'
+  } catch(err) {
+    console.error(err)
+    alert('Error al generar el PDF: '+err.message)
+  } finally {
+    btns.forEach(b=>{b.disabled=false;b.innerHTML='⬇ Descargar PDF Premium'})
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// EVENT BINDING (post-render)
+// ═══════════════════════════════════════════════════════════════
+function bindEvents() {
+  // Upload events
+  const dz=document.getElementById('dropzone')
+  const selectBtn=document.getElementById('select-btn')
+  const fileInput=document.createElement('input')
+  fileInput.type='file'; fileInput.accept='.pdf'
+  if (dz) {
+    dz.ondragover=e=>{e.preventDefault();dz.classList.add('dragover')}
+    dz.ondragleave=()=>dz.classList.remove('dragover')
+    dz.ondrop=e=>{e.preventDefault();dz.classList.remove('dragover');if(e.dataTransfer.files[0])processFile(e.dataTransfer.files[0])}
+    dz.onclick=e=>{if(e.target===dz||e.target.closest('#dz-idle')){if(!document.getElementById('dz-loading')||document.getElementById('dz-loading').style.display==='none')fileInput.click()}}
+  }
+  if (selectBtn) selectBtn.onclick=e=>{e.stopPropagation();fileInput.click()}
+  fileInput.onchange=e=>{if(e.target.files[0])processFile(e.target.files[0])}
+
+  // Section actions (delegated)
+  document.querySelectorAll('.sec-up').forEach(b=>b.onclick=()=>moveSection(b.dataset.id,'up'))
+  document.querySelectorAll('.sec-dn').forEach(b=>b.onclick=()=>moveSection(b.dataset.id,'down'))
+  document.querySelectorAll('.sec-edit').forEach(b=>b.onclick=()=>setState({editingId:b.dataset.id}))
+  document.querySelectorAll('.sec-del').forEach(b=>b.onclick=()=>{
+    state.sections=state.sections.filter(s=>s.id!==b.dataset.id)
+    if (state.editingId===b.dataset.id) state.editingId=null
+    render()
+  })
+}
+
+function moveSection(id, dir) {
+  const secs=[...state.sections]
+  const i=secs.findIndex(s=>s.id===id)
+  if (dir==='up'&&i===0) return
+  if (dir==='down'&&i===secs.length-1) return
+  const sw=dir==='up'?i-1:i+1;
+  [secs[i],secs[sw]]=[secs[sw],secs[i]]
+  setState({sections:secs})
+}
+
+async function processFile(file) {
+  if (!file||file.type!=='application/pdf') { showError('Por favor, selecciona un archivo PDF válido.'); return }
+  if (file.size>25*1024*1024) { showError('El archivo es demasiado grande. Máximo 25MB.'); return }
+  hideError()
+  const idle=document.getElementById('dz-idle')
+  const loading=document.getElementById('dz-loading')
+  if (idle) idle.style.display='none'
+  if (loading) loading.style.display='block'
+
+  function setProgress(t) { const p=document.getElementById('progress-text'); if(p) p.textContent=t }
+  try {
+    setProgress('Leyendo el PDF...'); await delay(200)
+    const {fullText,pageCount}=await extractPDF(file)
+    setProgress('Analizando estructura...'); await delay(200)
+    const sections=structureText(fullText)
+    const inferredMeta=inferMeta(file.name,sections)
+    state.rawText=fullText; state.sections=sections; state.filename=file.name
+    state.meta.title=state.meta.title||inferredMeta.title
+    state.meta.subtitle=state.meta.subtitle||inferredMeta.subtitle
+    setState({step:'extract'})
+  } catch(err) {
+    console.error(err)
+    if (idle) idle.style.display='block'
+    if (loading) loading.style.display='none'
+    showError('Error al procesar el PDF. Asegúrate de que el archivo no está protegido.')
+  }
+}
+
+function showError(msg) {
+  const e=document.getElementById('upload-error')
+  if (e) { e.innerHTML='⚠️ '+escHtml(msg); e.style.display='flex' }
+}
+function hideError() {
+  const e=document.getElementById('upload-error'); if(e) e.style.display='none'
+}
+function delay(ms) { return new Promise(r=>setTimeout(r,ms)) }
+
+// ═══════════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════════
+render()
+</script>
+</body>
+</html>
