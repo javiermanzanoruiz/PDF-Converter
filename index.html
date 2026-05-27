@@ -1,0 +1,1399 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>JM PDF Studio — Javier Manzano Fitness</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',system-ui,sans-serif;background:#04081a;color:#e2e8f0;min-height:100vh}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:#0a0f28}::-webkit-scrollbar-thumb{background:#1e3a5f;border-radius:3px}
+
+/* ── Layout ── */
+.shell{display:flex;flex-direction:column;min-height:100vh}
+header{display:flex;align-items:center;justify-content:space-between;padding:14px 24px;border-bottom:1px solid rgba(255,255,255,0.06);background:rgba(4,8,26,0.95);position:sticky;top:0;z-index:100;backdrop-filter:blur(12px)}
+.logo{display:flex;align-items:center;gap:11px}
+.logo-icon{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#2563eb,#1d4ed8);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;color:#fff;letter-spacing:-.5px}
+.logo-name{font-size:13px;font-weight:600;color:#fff}
+.logo-sub{font-size:10px;color:rgba(255,255,255,0.3);margin-top:1px}
+.main{flex:1;max-width:900px;margin:0 auto;width:100%;padding:28px 20px 60px}
+
+/* ── Steps ── */
+.stepbar{display:flex;align-items:center;gap:4px;padding:10px 24px;border-bottom:1px solid rgba(255,255,255,0.05);background:rgba(4,8,26,0.7)}
+.step{display:flex;align-items:center;gap:6px;padding:5px 12px;border-radius:8px;font-size:12px;font-weight:500;cursor:pointer;border:none;background:transparent;color:rgba(255,255,255,0.25);font-family:inherit;transition:all .2s}
+.step.active{background:rgba(37,99,235,0.15);color:#93c5fd;border:1px solid rgba(37,99,235,0.3)}
+.step.done{color:rgba(99,160,255,0.55)}
+.step.done:hover{color:#93c5fd;background:rgba(255,255,255,0.05)}
+.step-n{width:19px;height:19px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0}
+.step-n.a{background:#2563eb;color:#fff}
+.step-n.d{background:#1e3a5f;color:#93c5fd}
+.step-n.p{background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.2)}
+.step-line{width:18px;height:1px;background:rgba(255,255,255,0.07)}
+.step-line.done{background:rgba(59,130,246,0.35)}
+
+/* ── Cards ── */
+.card{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:16px}
+.card-blue{background:rgba(37,99,235,0.07);border:1px solid rgba(37,99,235,0.2);border-radius:16px}
+.card-green{background:rgba(16,185,129,0.07);border:1px solid rgba(16,185,129,0.2);border-radius:14px}
+.card-amber{background:rgba(245,158,11,0.07);border:1px solid rgba(245,158,11,0.2);border-radius:14px}
+.card-red{background:rgba(239,68,68,0.07);border:1px solid rgba(239,68,68,0.25);border-radius:14px}
+
+/* ── Btns ── */
+.btn{display:inline-flex;align-items:center;gap:7px;padding:10px 20px;border-radius:11px;border:none;font-family:inherit;font-size:13.5px;font-weight:500;cursor:pointer;transition:all .2s;text-decoration:none}
+.btn-primary{background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff;box-shadow:0 4px 20px rgba(37,99,235,0.35)}
+.btn-primary:hover{background:linear-gradient(135deg,#3b82f6,#2563eb);box-shadow:0 6px 24px rgba(37,99,235,0.45)}
+.btn-primary:disabled{opacity:.45;cursor:not-allowed;box-shadow:none}
+.btn-ghost{background:rgba(255,255,255,0.05);color:#e2e8f0;border:1px solid rgba(255,255,255,0.1)}
+.btn-ghost:hover{background:rgba(255,255,255,0.1)}
+.btn-sm{padding:6px 13px;font-size:12px;border-radius:8px}
+.btn-icon{width:30px;height:30px;padding:0;border-radius:8px;justify-content:center}
+.btn-danger{background:rgba(127,29,29,0.3);color:#fca5a5;border:1px solid rgba(127,29,29,0.35)}
+.btn-danger:hover{background:rgba(127,29,29,0.5)}
+
+/* ── Forms ── */
+input,textarea,select{width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:10px 14px;color:#e2e8f0;font-family:inherit;font-size:13.5px;outline:none;transition:all .2s}
+input:focus,textarea:focus,select:focus{border-color:rgba(59,130,246,0.55);background:rgba(255,255,255,0.08)}
+textarea{resize:vertical;line-height:1.6}
+select option{background:#0d1a3e}
+label{display:block;font-size:11px;font-weight:600;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px}
+
+/* ── Upload zone ── */
+.drop-zone{border:2px dashed rgba(59,130,246,0.25);border-radius:20px;padding:52px 24px;text-align:center;cursor:pointer;transition:all .3s}
+.drop-zone:hover,.drop-zone.on{border-color:rgba(59,130,246,0.65);background:rgba(59,130,246,0.05)}
+
+/* ── API key input area ── */
+.api-area{padding:16px;border-radius:14px;background:rgba(13,26,62,0.6);border:1px solid rgba(37,99,235,0.2);margin-bottom:20px}
+.api-row{display:flex;gap:8px;align-items:center}
+.api-row input{margin-bottom:0}
+.api-status{display:flex;align-items:center;gap:6px;font-size:11px;margin-top:8px}
+.dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.dot-green{background:#22c55e}
+.dot-amber{background:#f59e0b}
+.dot-gray{background:#4b5563}
+
+/* ── Sections editor ── */
+.sec-row{display:flex;align-items:flex-start;gap:10px;padding:13px 14px;border-radius:12px;border:1px solid rgba(255,255,255,0.07);background:rgba(255,255,255,0.025);margin-bottom:8px;transition:all .2s}
+.sec-row:hover{border-color:rgba(255,255,255,0.12)}
+.sec-row.drag-over{border-color:rgba(59,130,246,0.5);background:rgba(59,130,246,0.06)}
+.sec-row.dragging{opacity:.35}
+.drag-h{cursor:grab;color:rgba(255,255,255,0.18);padding-top:2px;font-size:15px;line-height:1;transition:color .2s;user-select:none}
+.drag-h:hover{color:rgba(255,255,255,0.5)}
+.sec-num{width:24px;height:24px;border-radius:6px;background:rgba(37,99,235,0.2);color:#93c5fd;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.sec-info{flex:1;min-width:0}
+.sec-title{font-size:13px;font-weight:500;color:#e2e8f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sec-preview{font-size:11px;color:rgba(255,255,255,0.3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:3px}
+.sec-actions{display:flex;gap:4px;flex-shrink:0}
+.sec-editor{padding:16px;border-radius:12px;border:1px solid rgba(59,130,246,0.3);background:rgba(37,99,235,0.04);margin-bottom:8px}
+
+/* ── Tabs ── */
+.tabs{display:flex;gap:2px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:11px;padding:3px;width:fit-content;margin-bottom:20px}
+.tab{padding:7px 15px;border-radius:8px;border:none;background:transparent;color:rgba(255,255,255,0.4);font-family:inherit;font-size:12.5px;font-weight:500;cursor:pointer;transition:all .2s}
+.tab.active{background:#2563eb;color:#fff;box-shadow:0 2px 10px rgba(37,99,235,0.4)}
+
+/* ── Theme cards ── */
+.theme-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.theme-card{padding:14px;border-radius:13px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.03);cursor:pointer;text-align:left;width:100%;font-family:inherit;transition:all .2s}
+.theme-card:hover{border-color:rgba(255,255,255,0.15)}
+.theme-card.sel{border-color:rgba(59,130,246,0.5);background:rgba(59,130,246,0.07)}
+.theme-dots{display:flex;gap:5px;margin-bottom:9px}
+.theme-dot{width:24px;height:24px;border-radius:7px;border:1px solid rgba(255,255,255,0.08)}
+
+/* ── Stats ── */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:22px}
+.stat{padding:14px;border-radius:12px;text-align:center}
+.stat-l{font-size:10px;font-weight:600;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px}
+.stat-v{font-size:22px;font-weight:700;font-family:'Playfair Display',serif}
+.stat-s{font-size:10px;color:rgba(255,255,255,0.25);margin-top:2px}
+
+/* ── Progress bar ── */
+.progress-wrap{height:4px;background:rgba(255,255,255,0.06);border-radius:4px;overflow:hidden;margin-bottom:8px}
+.progress-bar{height:100%;background:linear-gradient(90deg,#2563eb,#60a5fa);border-radius:4px;transition:width .4s ease}
+
+/* ── Alerts ── */
+.alert{display:flex;align-items:flex-start;gap:10px;padding:12px 16px;font-size:13px;margin-bottom:14px}
+
+/* ── PDF Preview ── */
+.pdf-preview-wrap{display:flex;justify-content:center}
+.pdf-page{border-radius:16px;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,0.7);margin-bottom:14px;max-width:580px;width:100%}
+.pdf-hdr{padding:9px 24px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid}
+.pdf-hdr p{font-size:9px;letter-spacing:.12em;text-transform:uppercase}
+.pdf-body{padding:22px 24px}
+.pdf-sec{margin-bottom:18px}
+.pdf-sec-h{display:flex;align-items:center;gap:9px;margin-bottom:7px}
+.pdf-sec-bar{width:3px;height:18px;border-radius:2px;flex-shrink:0}
+.pdf-sec-title{font-size:13px;font-weight:600}
+.pdf-sec-body{font-size:11.5px;line-height:1.65;padding-left:12px}
+.pdf-divider{height:1px;margin:16px 0}
+.pdf-ftr{padding:7px 24px;display:flex;justify-content:space-between;align-items:center;border-top:1px solid}
+.pdf-ftr p{font-size:9px}
+.pdf-strip{padding:8px;text-align:center;font-size:9.5px;font-weight:700;letter-spacing:.15em;color:#fff}
+
+/* Cover preview */
+.pdf-cover-body{display:flex;min-height:320px}
+.pdf-cover-sidebar{width:30px;flex-shrink:0;display:flex;flex-direction:column}
+.pdf-cover-content{flex:1;padding:22px 22px 18px}
+.pdf-cover-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:9px;font-weight:700;letter-spacing:.08em;margin-bottom:20px}
+.pdf-cover-module{font-size:9px;font-weight:700;letter-spacing:.1em;padding:3px 9px;border-radius:6px;display:inline-block;margin-bottom:10px}
+.pdf-cover-line1{font-size:13px;font-weight:400;margin-bottom:2px}
+.pdf-cover-line2{font-size:28px;font-weight:700;line-height:1.1;margin-bottom:2px}
+.pdf-cover-line3{font-size:28px;font-weight:700;line-height:1.1;margin-bottom:8px}
+.pdf-cover-accent{width:40px;height:2.5px;border-radius:2px;margin-bottom:8px}
+.pdf-cover-sub{font-size:10px;margin-bottom:16px}
+.pdf-cover-sep{height:1px;margin:12px 0}
+.pdf-cover-date{font-size:9px;margin-bottom:4px}
+.pdf-cover-tagline{font-size:10px;font-style:italic}
+
+/* ── Misc ── */
+.spinner{width:18px;height:18px;border:2px solid rgba(255,255,255,0.15);border-top-color:#fff;border-radius:50%;animation:spin .65s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+.pulse{width:7px;height:7px;border-radius:50%;background:#3b82f6;animation:pls 1.6s ease-in-out infinite;flex-shrink:0}
+@keyframes pls{0%,100%{opacity:1}50%{opacity:.3}}
+.fade{animation:fadeIn .4s ease}
+.slide{animation:slideUp .35s ease}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes slideUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.back-btn{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:rgba(255,255,255,0.3);background:none;border:none;cursor:pointer;font-family:inherit;margin-bottom:14px;padding:0;transition:color .2s}
+.back-btn:hover{color:rgba(255,255,255,0.65)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.row{display:flex;align-items:center;gap:10px}
+.row-between{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.muted{color:rgba(255,255,255,0.35)}
+.accent{color:#93c5fd}
+.w-full{width:100%}
+.mt1{margin-top:4px}.mt2{margin-top:8px}.mt3{margin-top:12px}.mt4{margin-top:16px}.mt6{margin-top:24px}
+.mb1{margin-bottom:4px}.mb2{margin-bottom:8px}.mb3{margin-bottom:12px}.mb4{margin-bottom:16px}.mb6{margin-bottom:24px}
+.p4{padding:16px}.p5{padding:20px}.p6{padding:24px}
+.br{border-radius:14px}
+.divider{border:none;border-top:1px solid rgba(255,255,255,0.06);margin:24px 0}
+.text-xs{font-size:11px}.text-sm{font-size:13px}.text-lg{font-size:18px}
+.font-bold{font-weight:700}.font-semi{font-weight:600}
+.center{text-align:center}
+
+@media(max-width:600px){
+  .stats{grid-template-columns:1fr 1fr}
+  .grid2{grid-template-columns:1fr}
+  .theme-grid{grid-template-columns:1fr}
+  .tabs{flex-wrap:wrap}
+}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<!-- HEADER -->
+<header>
+  <div class="logo">
+    <div class="logo-icon">JM</div>
+    <div>
+      <div class="logo-name">JM PDF Studio</div>
+      <div class="logo-sub">Javier Manzano Fitness</div>
+    </div>
+  </div>
+  <div class="row" style="gap:8px">
+    <div id="api-indicator" class="row" style="gap:5px;font-size:11px;color:rgba(255,255,255,0.3)">
+      <div class="dot dot-gray" id="api-dot"></div>
+      <span id="api-label">Sin API</span>
+    </div>
+    <button class="btn btn-ghost btn-sm" onclick="showApiModal()">⚙ API Key</button>
+  </div>
+</header>
+
+<!-- STEPBAR -->
+<div class="stepbar" id="stepbar" style="display:none"></div>
+
+<!-- API MODAL -->
+<div id="api-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px);display:none">
+  <div class="card" style="max-width:480px;width:90%;padding:24px">
+    <div class="row-between mb4">
+      <h3 style="font-size:16px;font-weight:700;color:#fff">Configurar Claude API</h3>
+      <button onclick="closeApiModal()" style="background:none;border:none;color:rgba(255,255,255,0.4);cursor:pointer;font-size:18px">×</button>
+    </div>
+    <p class="text-sm muted mb4">Con la API, Claude lee e interpreta automáticamente el texto de PDFs con codificación corrupta (como los exportados de Canva).</p>
+    <label>Claude API Key</label>
+    <div class="row mb3">
+      <input type="password" id="api-key-input" placeholder="sk-ant-api03-..." style="margin-bottom:0"/>
+      <button class="btn btn-primary btn-sm" onclick="saveApiKey()" style="white-space:nowrap">Guardar</button>
+    </div>
+    <div class="card-blue p4 text-xs" style="line-height:1.6">
+      <strong style="color:#93c5fd">¿Dónde conseguirla?</strong><br>
+      Entra en <strong>console.anthropic.com</strong> → API Keys → Create Key.<br>
+      La clave se guarda solo en tu navegador (localStorage). Nunca sale a ningún servidor nuestro.
+    </div>
+    <div id="api-modal-status" style="margin-top:12px;display:none"></div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main" id="app"></div>
+
+</div><!-- shell -->
+
+<script>
+// ════════════════════════════════════════════════════════════════
+// CONFIG & STATE
+// ════════════════════════════════════════════════════════════════
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+  'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js'
+
+const STEPS = ['upload','extract','edit','preview']
+const STEP_LABELS = {upload:'Subir PDF',extract:'Extraer',edit:'Editor',preview:'Descargar'}
+
+const ST = {
+  step: 'upload',
+  apiKey: localStorage.getItem('jm_api_key') || '',
+  rawText: '',
+  sections: [],
+  filename: '',
+  editingId: null,
+  activeTab: 'sections',
+  theme: 'premium-blue',
+  dragSrc: null,
+  meta: {
+    title: '', subtitle: '', clientName: '',
+    moduleNum: '',
+    date: new Date().toLocaleDateString('es-ES',{year:'numeric',month:'long',day:'numeric'}),
+    contact: '@javiermanzanofitness',
+    brandName: 'JAVIER MANZANO FITNESS',
+    tagline: 'La clave está en el equilibrio',
+    closingMessage: ''
+  }
+}
+
+function set(patch){ Object.assign(ST, patch); render() }
+function setMeta(patch){ Object.assign(ST.meta, patch); render() }
+function genId(){ return Math.random().toString(36).substr(2,9) }
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') }
+function delay(ms){ return new Promise(r=>setTimeout(r,ms)) }
+
+// ── API indicator ────────────────────────────────────────────────
+function updateApiIndicator(){
+  const dot = document.getElementById('api-dot')
+  const lbl = document.getElementById('api-label')
+  if (!dot) return
+  if (ST.apiKey) {
+    dot.className = 'dot dot-green'
+    lbl.textContent = 'Claude API activa'
+    lbl.style.color = '#86efac'
+  } else {
+    dot.className = 'dot dot-gray'
+    lbl.textContent = 'Sin API (modo básico)'
+    lbl.style.color = 'rgba(255,255,255,0.3)'
+  }
+}
+
+function showApiModal(){
+  document.getElementById('api-modal').style.display = 'flex'
+  document.getElementById('api-key-input').value = ST.apiKey
+}
+function closeApiModal(){ document.getElementById('api-modal').style.display = 'none' }
+function saveApiKey(){
+  const key = document.getElementById('api-key-input').value.trim()
+  ST.apiKey = key
+  localStorage.setItem('jm_api_key', key)
+  const s = document.getElementById('api-modal-status')
+  s.style.display = 'block'
+  s.innerHTML = key
+    ? '<div class="card-green p4 text-sm">✅ API Key guardada correctamente.</div>'
+    : '<div class="card-amber p4 text-sm">⚠️ API Key eliminada. La app funcionará en modo básico.</div>'
+  updateApiIndicator()
+  setTimeout(closeApiModal, 1400)
+}
+
+// ════════════════════════════════════════════════════════════════
+// PDF EXTRACTION
+// ════════════════════════════════════════════════════════════════
+async function extractPDF(file){
+  const ab = await file.arrayBuffer()
+  const pdf = await pdfjsLib.getDocument({data:ab}).promise
+  const pages = []
+  for(let i=1;i<=pdf.numPages;i++){
+    const page = await pdf.getPage(i)
+    const tc = await page.getTextContent()
+    pages.push(tc.items.map(x=>x.str).join(' '))
+  }
+  return pages.join('\n\n')
+}
+
+// ── DOCX extractor (lee XML interno del .docx) ─────────────────
+async function extractDocx(file){
+  // .docx es un ZIP con word/document.xml dentro
+  const ab = await file.arrayBuffer()
+  const uint8 = new Uint8Array(ab)
+  
+  // Buscar word/document.xml dentro del ZIP
+  // Usamos un parser ZIP básico buscando el archivo por nombre
+  const text = await extractZipEntry(uint8, 'word/document.xml')
+  if(!text) throw new Error('No se pudo leer el archivo Word')
+  
+  // Parsear el XML y extraer texto
+  const parser = new DOMParser()
+  const xml = parser.parseFromString(text, 'application/xml')
+  
+  // Extraer texto de los párrafos Word (<w:p> con <w:t>)
+  const paragraphs = xml.querySelectorAll('p')
+  const lines = []
+  paragraphs.forEach(p => {
+    const texts = p.querySelectorAll('t')
+    const line = Array.from(texts).map(t => t.textContent).join('')
+    if(line.trim()) lines.push(line.trim())
+  })
+  
+  return lines.join('\n')
+}
+
+// Extrae una entrada de un ZIP por nombre de archivo
+async function extractZipEntry(uint8, targetName){
+  // Firma local de entrada ZIP: PK\x03\x04
+  const sig = [0x50,0x4b,0x03,0x04]
+  let i = 0
+  while(i < uint8.length - 30){
+    if(uint8[i]===sig[0]&&uint8[i+1]===sig[1]&&uint8[i+2]===sig[2]&&uint8[i+3]===sig[3]){
+      const fnLen = uint8[i+26] | (uint8[i+27]<<8)
+      const extraLen = uint8[i+28] | (uint8[i+29]<<8)
+      const fnBytes = uint8.slice(i+30, i+30+fnLen)
+      const fn = new TextDecoder().decode(fnBytes)
+      const dataStart = i + 30 + fnLen + extraLen
+      
+      if(fn === targetName){
+        const compSize = uint8[i+18]|(uint8[i+19]<<8)|(uint8[i+20]<<16)|(uint8[i+21]<<24)
+        const compMethod = uint8[i+8]|(uint8[i+9]<<8)
+        const compData = uint8.slice(dataStart, dataStart+compSize)
+        
+        if(compMethod === 0){
+          // Sin compresión
+          return new TextDecoder('utf-8').decode(compData)
+        } else if(compMethod === 8){
+          // Deflate — usar DecompressionStream
+          const ds = new DecompressionStream('deflate-raw')
+          const writer = ds.writable.getWriter()
+          writer.write(compData); writer.close()
+          const chunks = []
+          const reader = ds.readable.getReader()
+          while(true){
+            const {done,value} = await reader.read()
+            if(done) break
+            chunks.push(value)
+          }
+          const all = new Uint8Array(chunks.reduce((a,b)=>a+b.length,0))
+          let off=0; chunks.forEach(ch=>{all.set(ch,off);off+=ch.length})
+          return new TextDecoder('utf-8').decode(all)
+        }
+      }
+      i = dataStart
+    } else i++
+  }
+  return null
+}
+
+// ── Basic local cleanup (sin IA) ────────────────────────────────
+function basicStructure(raw){
+  let text = raw
+    .replace(/Ø[=<>][^\s]{1,4}/g,' ')   // quitar chars corruptos Canva
+    .replace(/[þ&«]/g,' ')
+    .replace(/\s+/g,' ')
+    .replace(/- /g,'')
+    .replace(/\u00AD/g,'')
+    .trim()
+
+  const lines = text.split(/(?<=[.!?])\s+(?=[A-ZÁÉÍÓÚÑ])/).map(l=>l.trim()).filter(l=>l.length>2)
+  const sections=[], buf=[]
+  let curTitle=null
+
+  for(const line of rawLines){
+    if(isSectionTitle(line)){
+      if(curTitle!==null||buf.length>0)
+        sections.push({id:genId(),title:curTitle||'',content:buf.join(' ').trim(),isIntro:curTitle===null})
+      curTitle=line.replace(/^[0-9]+[\.\)]\s+/,'').replace(/^#+\s+/,'').trim()
+      buf.length=0
+    } else buf.push(line)
+  }
+  if(buf.length>0||curTitle)
+    sections.push({id:genId(),title:curTitle||'',content:buf.join(' ').trim(),isIntro:curTitle===null&&sections.length===0})
+
+  return sections.filter(s=>s.content.length>8||s.title.length>0)
+    .map(s=>({...s,content:s.content.replace(/\s{2,}/g,' ').trim()}))
+}
+
+function isSectionTitle(l){
+  if(l.length>110||l.length<3) return false
+  return [
+    /^[0-9]+[\.\)]\s+[A-ZÁÉÍÓÚÑ]/,
+    /^[A-ZÁÉÍÓÚÑ][A-ZÁÉÍÓÚÑ\s]{5,40}$/,
+    /^#{1,3}\s/,
+    /^(introducción|conclusión|resumen|objetivos|recomendaciones|plan|protocolo|nutrición|entrenamiento|descanso|suplementación|metodología|errores|ejemplo|cierre|flexibilidad)/i
+  ].some(p=>p.test(l.trim()))
+}
+
+// ── Claude API cleanup ───────────────────────────────────────────
+async function cleanWithClaude(rawText){
+  const prompt = `Eres un editor profesional de documentos de salud y fitness para la marca "Javier Manzano Fitness".
+
+Tienes este texto extraído de un PDF. Puede contener caracteres corruptos (Ø=ÜI, þ, &«, etc.), emojis mal codificados, frases partidas y mala estructura.
+
+TU TAREA:
+1. Elimina todos los caracteres corruptos y artefactos
+2. Reconstruye el texto limpio y coherente
+3. Organiza en secciones lógicas con títulos claros
+4. Mantén TODO el contenido original, no añadas información nueva
+5. Mejora la redacción sin cambiar el sentido
+
+RESPONDE SOLO con JSON válido, sin texto extra, sin markdown:
+{
+  "title": "título principal del documento",
+  "subtitle": "subtítulo si existe",
+  "sections": [
+    {"id": "s1", "title": "Nombre sección", "content": "contenido limpio...", "isIntro": false}
+  ]
+}
+
+La primera sección puede tener isIntro:true si es introducción sin título claro.
+
+TEXTO A LIMPIAR:
+${rawText.substring(0,12000)}`
+
+  const response = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': ST.apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 4000,
+      messages: [{role:'user',content:prompt}]
+    })
+  })
+
+  if(!response.ok){
+    const err = await response.json().catch(()=>({}))
+    throw new Error(err.error?.message || `API error ${response.status}`)
+  }
+
+  const data = await response.json()
+  const text = data.content.find(b=>b.type==='text')?.text || ''
+  const clean = text.replace(/```json|```/g,'').trim()
+  return JSON.parse(clean)
+}
+
+function inferMeta(filename, sections){
+  const name = filename.replace('.pdf','').replace(/[_-]/g,' ')
+  const all = sections.map(s=>s.title+' '+s.content).join(' ').toLowerCase()
+  let sub = 'Documento'
+  if(all.includes('entrenamiento')||all.includes('ejercicio')) sub='Plan de Entrenamiento'
+  else if(all.includes('nutrición')||all.includes('dieta')||all.includes('alimentación')) sub='Guía de Nutrición'
+  else if(all.includes('protocolo')) sub='Protocolo'
+  else if(all.includes('guía')||all.includes('guia')) sub='Guía'
+  return { title: name.length>3?name:sub, subtitle:sub }
+}
+
+// ════════════════════════════════════════════════════════════════
+// RENDER ENGINE
+// ════════════════════════════════════════════════════════════════
+function render(){
+  updateApiIndicator()
+  renderStepbar()
+  const app = document.getElementById('app')
+  const screens = {upload:screenUpload,extract:screenExtract,edit:screenEdit,preview:screenPreview}
+  app.innerHTML=''
+  app.appendChild((screens[ST.step]||screenUpload)())
+  bindAll()
+}
+
+function renderStepbar(){
+  const bar = document.getElementById('stepbar')
+  if(ST.step==='upload'){ bar.style.display='none'; return }
+  bar.style.display='flex'
+  const ci = STEPS.indexOf(ST.step)
+  bar.innerHTML=''
+  STEPS.forEach((s,i)=>{
+    const done=i<ci, active=s===ST.step, reach=i<=ci
+    const nc = active?'a':done?'d':'p'
+    const sc = 'step'+(active?' active':done?' done':'')
+    const b = document.createElement('button')
+    b.className=sc; b.disabled=!reach
+    b.innerHTML=`<span class="step-n ${nc}">${done?'✓':i+1}</span>${STEP_LABELS[s]}`
+    if(reach) b.onclick=()=>set({step:s})
+    bar.appendChild(b)
+    if(i<3){
+      const d=document.createElement('div')
+      d.className='step-line'+(done?' done':'')
+      bar.appendChild(d)
+    }
+  })
+}
+
+function mk(tag,cls='',html='',attrs={}){
+  const e=document.createElement(tag)
+  if(cls) e.className=cls
+  if(html) e.innerHTML=html
+  Object.entries(attrs).forEach(([k,v])=>{ if(k==='style')e.style.cssText=v; else e[k]=v })
+  return e
+}
+function ap(parent,...children){ children.forEach(c=>{ if(c) parent.appendChild(typeof c==='string'?Object.assign(document.createElement('span'),{innerHTML:c}):c) }); return parent }
+
+// ════════════════════════════════════════════════════════════════
+// SCREEN: UPLOAD
+// ════════════════════════════════════════════════════════════════
+function screenUpload(){
+  const wrap = mk('div','fade','',({}))
+  wrap.style.paddingTop='24px'
+
+  // Hero
+  const hero = mk('div','center mb6')
+  hero.innerHTML=`
+    <div style="display:inline-flex;align-items:center;gap:7px;background:rgba(37,99,235,0.1);border:1px solid rgba(37,99,235,0.25);padding:5px 14px;border-radius:20px;font-size:11px;font-weight:600;color:#93c5fd;margin-bottom:20px">
+      <div class="pulse"></div> PDF Studio · 100% en tu navegador
+    </div>
+    <h1 style="font-size:clamp(26px,5.5vw,44px);font-weight:700;line-height:1.15;color:#fff;margin-bottom:10px;font-family:'Playfair Display',serif">
+      Convierte tus documentos<br>en <span style="background:linear-gradient(135deg,#60a5fa,#93c5fd);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">PDFs premium</span>
+    </h1>
+    <p style="font-size:14px;color:rgba(255,255,255,0.4);max-width:440px;margin:0 auto;line-height:1.7">
+      Sube un PDF, Claude lo lee y reestructura automáticamente,<br>
+      tú editas y descargas con diseño profesional.
+    </p>`
+  wrap.appendChild(hero)
+
+  // API notice
+  if(!ST.apiKey){
+    const notice = mk('div','card-amber p4 mb4 fade')
+    notice.style.cssText='padding:14px 16px;margin-bottom:20px;display:flex;align-items:flex-start;gap:10px;font-size:13px;border-radius:14px'
+    notice.innerHTML=`<span style="font-size:18px;flex-shrink:0">⚡</span>
+      <div>
+        <strong style="color:#fcd34d">Activa Claude API para mejores resultados.</strong><br>
+        <span style="color:rgba(255,255,255,0.5)">Sin API, la app extrae texto básico. Con API, Claude limpia PDFs corruptos de Canva automáticamente.</span>
+        <button class="btn btn-sm" onclick="showApiModal()" style="background:rgba(245,158,11,0.2);color:#fcd34d;border:1px solid rgba(245,158,11,0.3);margin-top:8px">Configurar API Key →</button>
+      </div>`
+    wrap.appendChild(notice)
+  } else {
+    const ok = mk('div','card-green fade')
+    ok.style.cssText='padding:12px 16px;margin-bottom:20px;display:flex;align-items:center;gap:8px;font-size:13px;border-radius:14px'
+    ok.innerHTML=`<span>✅</span><span style="color:#86efac">Claude API activa — los PDFs se limpiarán automáticamente.</span>`
+    wrap.appendChild(ok)
+  }
+
+  // Drop zone
+  const dz = mk('div','drop-zone','',{id:'dropzone'})
+  dz.innerHTML=`
+    <div id="dz-idle">
+      <div style="width:60px;height:60px;border-radius:18px;background:rgba(37,99,235,0.1);border:1px solid rgba(37,99,235,0.2);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:22px">📄&nbsp;📝</div>
+      <p style="font-size:16px;font-weight:600;color:#fff;margin-bottom:6px">Arrastra tu PDF aquí</p>
+      <p style="font-size:13px;color:rgba(255,255,255,0.3);margin-bottom:18px">o haz clic para seleccionar · PDF o Word (.docx) · Máx. 25 MB</p>
+      <button class="btn btn-primary" id="sel-btn">Seleccionar PDF</button>
+    </div>
+    <div id="dz-loading" style="display:none">
+      <div class="spinner" style="width:36px;height:36px;border-width:3px;margin:0 auto 14px"></div>
+      <p id="prog-text" style="color:#93c5fd;font-weight:500;margin-bottom:4px">Leyendo PDF...</p>
+      <div class="progress-wrap" style="width:200px;margin:10px auto 0"><div class="progress-bar" id="prog-bar" style="width:10%"></div></div>
+    </div>`
+  wrap.appendChild(dz)
+
+  const errDiv = mk('div','card-red fade','',({}))
+  errDiv.style.cssText='display:none;padding:12px 16px;margin-top:12px;font-size:13px'
+  errDiv.id='upload-err'
+  wrap.appendChild(errDiv)
+
+  // Also: manual entry button
+  const manualWrap = mk('div','center mt4')
+  manualWrap.innerHTML=`<p class="text-xs muted mb2">¿Quieres crear un documento desde cero?</p>`
+  const manualBtn = mk('button','btn btn-ghost btn-sm','✏ Crear documento manualmente')
+  manualBtn.onclick=()=>{
+    ST.sections=[{id:genId(),title:'Introducción',content:'',isIntro:true}]
+    ST.rawText=''
+    ST.filename='documento-nuevo.pdf'
+    set({step:'edit',activeTab:'sections'})
+  }
+  manualWrap.appendChild(manualBtn)
+  wrap.appendChild(manualWrap)
+
+  return wrap
+}
+
+// ════════════════════════════════════════════════════════════════
+// SCREEN: EXTRACT
+// ════════════════════════════════════════════════════════════════
+function screenExtract(){
+  const wrap = mk('div','fade')
+  wrap.style.paddingTop='20px'
+
+  const bk = mk('button','back-btn','← Volver')
+  bk.onclick=()=>set({step:'upload'})
+  wrap.appendChild(bk)
+
+  wrap.appendChild(mk('div','mb6',`
+    <h2 style="font-size:22px;font-weight:700;color:#fff">Texto extraído</h2>
+    <p class="muted text-sm mt1">Revisa el contenido antes de editar</p>`))
+
+  // Stats
+  const wc = ST.rawText.split(/\s+/).filter(Boolean).length
+  const stats = mk('div','stats mb6')
+  ;[
+    {l:'Archivo',v:ST.filename.replace('.pdf','').substring(0,14)||'—',s:'.pdf'},
+    {l:'Palabras',v:wc.toLocaleString(),s:'extraídas'},
+    {l:'Secciones',v:ST.sections.length,s:'detectadas'},
+    {l:'Estado',v:'✓',s:'Listo',hi:true},
+  ].forEach(st=>{
+    const c = mk('div','stat card'+(st.hi?' card-blue':''))
+    c.innerHTML=`<div class="stat-l">${st.l}</div><div class="stat-v" style="color:${st.hi?'#93c5fd':'#fff'}">${st.v}</div><div class="stat-s">${st.s}</div>`
+    stats.appendChild(c)
+  })
+  wrap.appendChild(stats)
+
+  // Content preview
+  const box = mk('div','card','',({}))
+  box.style.cssText='max-height:380px;overflow-y:auto;margin-bottom:20px'
+  if(!ST.sections.length){
+    box.innerHTML='<p class="center muted text-sm" style="padding:40px">No se detectaron secciones.</p>'
+  } else {
+    const inner = mk('div','','',({}))
+    inner.style.padding='20px'
+    ST.sections.forEach(s=>{
+      const row = mk('div','',({}))
+      row.style.cssText='border-left:2px solid rgba(59,130,246,0.3);padding-left:14px;margin-bottom:18px'
+      if(s.title) row.appendChild(mk('p','accent text-xs font-semi',esc(s.title),{style:'text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px'}))
+      else row.appendChild(mk('p','muted text-xs','{Introducción}',{style:'font-style:italic;margin-bottom:4px'}))
+      row.appendChild(mk('p','',esc((s.content||'').substring(0,280)+(s.content?.length>280?'...':'')),{style:'font-size:12px;line-height:1.6;color:rgba(255,255,255,0.6)'}))
+      inner.appendChild(row)
+    })
+    box.appendChild(inner)
+  }
+  wrap.appendChild(box)
+
+  if(ST.rawText.includes('Ø=')||ST.rawText.includes('þ')){
+    const warn = mk('div','card-amber fade','',({}))
+    warn.style.cssText='padding:13px 16px;margin-bottom:16px;display:flex;gap:10px;align-items:flex-start;font-size:13px;border-radius:14px'
+    warn.innerHTML=`<span style="font-size:17px;flex-shrink:0">⚠️</span>
+      <div><strong style="color:#fcd34d">PDF con codificación corrupta detectado</strong> (típico de Canva).<br>
+      <span style="color:rgba(255,255,255,0.45)">${ST.apiKey?'Haz clic en <strong>Limpiar con Claude</strong> para reconstruir el texto correctamente.':'Configura la Claude API Key para limpiar automáticamente este tipo de PDFs.'}</span></div>`
+    wrap.appendChild(warn)
+  }
+
+  const actions = mk('div','row-between')
+  const bk2 = mk('button','btn btn-ghost','← Volver')
+  bk2.onclick=()=>set({step:'upload'})
+
+  const right = mk('div','row','',({}))
+
+  if(ST.apiKey){
+    const cleanBtn = mk('button','btn btn-primary','✨ Limpiar con Claude')
+    cleanBtn.onclick=async()=>{
+      cleanBtn.disabled=true
+      cleanBtn.innerHTML='<div class="spinner"></div> Claude está leyendo...'
+      try{
+        const result = await cleanWithClaude(ST.rawText)
+        const secs = (result.sections||[]).map(s=>({...s,id:s.id||genId()}))
+        if(result.title && !ST.meta.title) ST.meta.title=result.title
+        if(result.subtitle && !ST.meta.subtitle) ST.meta.subtitle=result.subtitle
+        set({sections:secs,step:'edit',activeTab:'sections'})
+      } catch(e){
+        cleanBtn.disabled=false
+        cleanBtn.innerHTML='✨ Limpiar con Claude'
+        const err = mk('div','card-red',`⚠️ Error: ${esc(e.message)}`,({}))
+        err.style.cssText='padding:10px 14px;margin-top:10px;font-size:12px;border-radius:10px'
+        actions.appendChild(err)
+      }
+    }
+    right.appendChild(cleanBtn)
+  }
+
+  const contBtn = mk('button','btn btn-ghost','Continuar sin limpiar →')
+  contBtn.onclick=()=>set({step:'edit'})
+  right.appendChild(contBtn)
+
+  actions.appendChild(bk2)
+  actions.appendChild(right)
+  wrap.appendChild(actions)
+
+  return wrap
+}
+
+// ════════════════════════════════════════════════════════════════
+// SCREEN: EDIT
+// ════════════════════════════════════════════════════════════════
+function screenEdit(){
+  const wrap = mk('div','fade')
+  wrap.style.paddingTop='20px'
+
+  const bk = mk('button','back-btn',ST.rawText?'← Volver':'← Inicio')
+  bk.onclick=()=>set({step:ST.rawText?'extract':'upload'})
+  wrap.appendChild(bk)
+
+  const topRow = mk('div','row-between mb4')
+  topRow.appendChild(mk('div','',`<h2 style="font-size:22px;font-weight:700;color:#fff">Editor del documento</h2><p class="muted text-sm mt1">${ST.sections.length} secciones · Edita, reordena y personaliza</p>`))
+  const prevBtn = mk('button','btn btn-primary','👁 Vista previa')
+  prevBtn.onclick=()=>set({step:'preview'})
+  topRow.appendChild(prevBtn)
+  wrap.appendChild(topRow)
+
+  // Tabs
+  const tabs = mk('div','tabs')
+  ;['sections','meta','theme'].forEach(t=>{
+    const labels={sections:'Secciones',meta:'Metadatos',theme:'Estilo'}
+    const b = mk('button','tab'+(ST.activeTab===t?' active':''),labels[t])
+    b.onclick=()=>set({activeTab:t})
+    tabs.appendChild(b)
+  })
+  wrap.appendChild(tabs)
+
+  if(ST.activeTab==='sections') wrap.appendChild(tabSections())
+  else if(ST.activeTab==='meta') wrap.appendChild(tabMeta())
+  else wrap.appendChild(tabTheme())
+
+  const bot = mk('div','row-between','',({}))
+  bot.style.cssText='margin-top:24px;padding-top:20px;border-top:1px solid rgba(255,255,255,0.06)'
+  const bk2=mk('button','btn btn-ghost','← Volver'); bk2.onclick=()=>set({step:ST.rawText?'extract':'upload'})
+  const nx=mk('button','btn btn-primary','Vista previa y descarga →'); nx.onclick=()=>set({step:'preview'})
+  bot.appendChild(bk2); bot.appendChild(nx)
+  wrap.appendChild(bot)
+
+  return wrap
+}
+
+function tabSections(){
+  const wrap = mk('div','slide')
+
+  if(!ST.sections.length){
+    wrap.appendChild(mk('div','card center','',({})).appendChild(mk('p','muted text-sm','{Sin secciones}')))
+  }
+
+  ST.sections.forEach((s,i)=>{
+    if(ST.editingId===s.id){
+      const ed = mk('div','sec-editor')
+      const topE = mk('div','row-between mb3')
+      topE.appendChild(mk('span','accent text-xs font-semi','EDITANDO SECCIÓN',{style:'text-transform:uppercase;letter-spacing:.08em'}))
+      const doneBtn = mk('button','btn btn-primary btn-sm','✓ Hecho')
+      doneBtn.onclick=()=>set({editingId:null})
+      topE.appendChild(doneBtn)
+      ed.appendChild(topE)
+
+      const tl=mk('label','','Título'); ed.appendChild(tl)
+      const ti=mk('input','','',{type:'text',value:s.title||'',placeholder:'Título de sección (vacío = sin título)'})
+      ti.oninput=e=>{ s.title=e.target.value }
+      ed.appendChild(ti)
+
+      const cl=mk('label','','Contenido',{style:'margin-top:12px'}); ed.appendChild(cl)
+      const ta=mk('textarea','','',{rows:7,placeholder:'Contenido...'})
+      ta.value=s.content||''
+      ta.oninput=e=>{ s.content=e.target.value }
+      ed.appendChild(ta)
+      wrap.appendChild(ed)
+    } else {
+      const row = mk('div','sec-row','',({}))
+      row.setAttribute('draggable','true')
+      row.dataset.id=s.id
+
+      const dh = mk('div','drag-h','⠿')
+      const num = mk('div','sec-num',String(i+1))
+      const info = mk('div','sec-info',`<div class="sec-title">${esc(s.title)||'<span style="color:rgba(255,255,255,0.2);font-style:italic">Sin título</span>'}</div><div class="sec-preview">${esc((s.content||'').substring(0,72))||'Sin contenido'}</div>`)
+      const acts = mk('div','sec-actions')
+
+      const upBtn = mk('button','btn btn-icon btn-ghost btn-sm','↑',{disabled:i===0,title:'Subir'})
+      upBtn.onclick=()=>moveSection(s.id,'up')
+      const dnBtn = mk('button','btn btn-icon btn-ghost btn-sm','↓',{disabled:i===ST.sections.length-1,title:'Bajar'})
+      dnBtn.onclick=()=>moveSection(s.id,'down')
+      const edBtn = mk('button','btn btn-icon btn-sm','✏',{title:'Editar',style:'background:rgba(37,99,235,0.15);color:#93c5fd'})
+      edBtn.onclick=()=>set({editingId:s.id})
+      const delBtn = mk('button','btn btn-icon btn-danger btn-sm','🗑',{title:'Eliminar'})
+      delBtn.onclick=()=>{ ST.sections=ST.sections.filter(x=>x.id!==s.id); if(ST.editingId===s.id) ST.editingId=null; render() }
+
+      ap(acts,upBtn,dnBtn,edBtn,delBtn)
+      ap(row,dh,num,info,acts)
+
+      // Drag events
+      row.ondragstart=e=>{ ST.dragSrc=s.id; row.classList.add('dragging'); e.dataTransfer.effectAllowed='move' }
+      row.ondragend=()=>{ ST.dragSrc=null; document.querySelectorAll('.sec-row').forEach(r=>r.classList.remove('dragging','drag-over')) }
+      row.ondragover=e=>{ e.preventDefault(); if(ST.dragSrc!==s.id) row.classList.add('drag-over') }
+      row.ondragleave=()=>row.classList.remove('drag-over')
+      row.ondrop=e=>{
+        e.preventDefault(); row.classList.remove('drag-over')
+        if(!ST.dragSrc||ST.dragSrc===s.id) return
+        const arr=[...ST.sections]
+        const from=arr.findIndex(x=>x.id===ST.dragSrc)
+        const to=arr.findIndex(x=>x.id===s.id)
+        const [m]=arr.splice(from,1); arr.splice(to,0,m)
+        set({sections:arr,dragSrc:null})
+      }
+      wrap.appendChild(row)
+    }
+  })
+
+  const addBtn = mk('button','btn btn-ghost w-full','+ Añadir sección',{style:'justify-content:center;margin-top:8px'})
+  addBtn.onclick=()=>{
+    const ns={id:genId(),title:'Nueva sección',content:'',isIntro:false}
+    set({sections:[...ST.sections,ns],editingId:ns.id})
+  }
+  wrap.appendChild(addBtn)
+  return wrap
+}
+
+function tabMeta(){
+  const wrap = mk('div','slide')
+  const g = mk('div','grid2')
+  const fields=[
+    {k:'title',l:'Título del documento',p:'Aprende a Comer a Tu Manera'},
+    {k:'subtitle',l:'Subtítulo',p:'Guía de Nutrición'},
+    {k:'moduleNum',l:'Número de módulo',p:'9'},
+    {k:'clientName',l:'Nombre del cliente',p:'Nombre Apellido'},
+    {k:'date',l:'Fecha',p:'25 de mayo de 2026'},
+    {k:'brandName',l:'Nombre de marca',p:'JAVIER MANZANO FITNESS'},
+    {k:'tagline',l:'Frase de marca',p:'La clave está en el equilibrio'},
+    {k:'contact',l:'Contacto',p:'@javiermanzanofitness'},
+  ]
+  fields.forEach(f=>{
+    const d=mk('div')
+    const lbl=mk('label','',f.l); d.appendChild(lbl)
+    const inp=mk('input','','',{type:'text',value:ST.meta[f.k]||'',placeholder:f.p})
+    inp.oninput=e=>{ ST.meta[f.k]=e.target.value }
+    d.appendChild(inp); g.appendChild(d)
+  })
+  wrap.appendChild(g)
+
+  const dm=mk('div','','',({})); dm.style.marginTop='14px'
+  dm.appendChild(mk('label','','Mensaje de cierre (opcional)'))
+  const ta=mk('textarea','','',{rows:3,placeholder:'Gracias por confiar en este proceso...'})
+  ta.value=ST.meta.closingMessage||''
+  ta.oninput=e=>{ ST.meta.closingMessage=e.target.value }
+  dm.appendChild(ta)
+  dm.appendChild(mk('p','text-xs muted','',({})).innerHTML='Si está vacío se usa un mensaje profesional por defecto.')
+  wrap.appendChild(dm)
+  return wrap
+}
+
+const THEMES_UI={
+  'premium-blue':{bg:'#04081a',surf:'#0d1a3e',acc:'#3b82f6',accL:'#93c5fd',text:'#e2e8f0',muted:'#64748b',border:'#1e3a5f',label:'Premium Azul',dots:['#04081a','#3b82f6','#e2e8f0']},
+  'minimal-white':{bg:'#fafbff',surf:'#f1f5fe',acc:'#2563eb',accL:'#2563eb',text:'#111827',muted:'#6b7280',border:'#dbeafe',label:'Minimalista Blanco',dots:['#fafbff','#2563eb','#111827']},
+  'dark-elegant':{bg:'#0a0a12',surf:'#12121e',acc:'#a855f7',accL:'#d8b4fe',text:'#e2e8f0',muted:'#94a3b8',border:'#282840',label:'Oscuro Elegante',dots:['#0a0a12','#a855f7','#e2e8f0']},
+}
+
+function tabTheme(){
+  const wrap = mk('div','slide')
+  wrap.appendChild(mk('p','muted text-sm mb4','Elige el estilo visual del PDF:'))
+  const g = mk('div','theme-grid')
+  Object.entries(THEMES_UI).forEach(([key,t])=>{
+    const card = mk('button','theme-card'+(ST.theme===key?' sel':''),'',({}))
+    const dots = mk('div','theme-dots')
+    t.dots.forEach(c=>{ const d=mk('div','theme-dot','',({})); d.style.background=c; dots.appendChild(d) })
+    card.appendChild(dots)
+    const row = mk('div','row-between')
+    row.appendChild(mk('p','',`<span style="font-size:13px;font-weight:600;color:#fff">${t.label}</span>`))
+    if(ST.theme===key){ const ck=mk('div','','',({})); ck.style.cssText='width:17px;height:17px;border-radius:50%;background:#2563eb;display:flex;align-items:center;justify-content:center;font-size:10px;color:#fff;flex-shrink:0'; ck.textContent='✓'; row.appendChild(ck) }
+    card.appendChild(row)
+    card.onclick=()=>set({theme:key})
+    g.appendChild(card)
+  })
+  wrap.appendChild(g)
+  return wrap
+}
+
+// ════════════════════════════════════════════════════════════════
+// SCREEN: PREVIEW
+// ════════════════════════════════════════════════════════════════
+function screenPreview(){
+  const wrap = mk('div','fade')
+  wrap.style.paddingTop='20px'
+  const bk = mk('button','back-btn','← Volver al editor')
+  bk.onclick=()=>set({step:'edit'})
+  wrap.appendChild(bk)
+
+  const T = THEMES_UI[ST.theme]||THEMES_UI['premium-blue']
+
+  const topRow = mk('div','row-between mb4')
+  topRow.appendChild(mk('div','',`<h2 style="font-size:22px;font-weight:700;color:#fff">Vista previa</h2><p class="muted text-sm mt1">Tema: <span style="color:${T.acc}">${T.label}</span></p>`))
+  const dlBtn = mk('button','btn btn-primary','',{id:'dl-btn'})
+  dlBtn.innerHTML='⬇ Descargar PDF Premium'
+  dlBtn.onclick=handleDownload
+  topRow.appendChild(dlBtn)
+  wrap.appendChild(topRow)
+
+  const successDiv = mk('div','card-green fade','',({}))
+  successDiv.style.cssText='display:none;padding:12px 16px;margin-bottom:16px;font-size:13px;align-items:center;gap:8px'
+  successDiv.id='dl-ok'
+  successDiv.innerHTML='✅  <span style="color:#86efac">¡PDF descargado! Revisa tu carpeta de descargas.</span>'
+  wrap.appendChild(successDiv)
+
+  // ── Document preview ────────────────────────────────────────
+  const pWrap = mk('div','pdf-preview-wrap')
+  const pInner = mk('div','','',({}))
+  pInner.style.cssText='width:100%;max-width:580px'
+
+  // Cover
+  const cover = mk('div','pdf-page','',({}))
+  cover.style.cssText=`background:${T.bg};border:1px solid ${T.border};margin-bottom:14px`
+
+  // Top gradient strip
+  const topStrip = mk('div','','',({}))
+  topStrip.style.cssText=`height:3px;background:linear-gradient(90deg,${T.acc},${T.accL})`
+  cover.appendChild(topStrip)
+
+  const coverBody = mk('div','pdf-cover-body')
+
+  // Sidebar
+  const sidebar = mk('div','pdf-cover-sidebar','',({}))
+  sidebar.style.background=T.surf
+  const sTop=mk('div','','',({})); sTop.style='flex:1'
+  const sAcc=mk('div','','',({})); sAcc.style.cssText=`height:70px;background:${T.acc}`
+  const sBot=mk('div','','',({})); sBot.style='flex:1'
+  ap(sidebar,sTop,sAcc,sBot)
+
+  // Cover content
+  const cc = mk('div','pdf-cover-content')
+  // badge
+  const badge = mk('div','pdf-cover-badge','',({}))
+  badge.style.cssText=`background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.3);color:${T.accL}`
+  badge.innerHTML=`<div style="width:6px;height:6px;border-radius:50%;background:#22c55e"></div>${esc(ST.meta.brandName||'JAVIER MANZANO FITNESS')}`
+  cc.appendChild(badge)
+
+  if(ST.meta.moduleNum){
+    const mod = mk('div','pdf-cover-module',`MÓDULO ${esc(ST.meta.moduleNum)}`,{})
+    mod.style.cssText=`background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.25);color:${T.accL}`
+    cc.appendChild(mod)
+  }
+
+  // Title (split into lines for impact)
+  const titleWords = (ST.meta.title||'Documento Premium').toUpperCase().split(' ')
+  const midpoint = Math.ceil(titleWords.length/2)
+  const line1 = titleWords.slice(0,midpoint).join(' ')
+  const line2 = titleWords.slice(midpoint).join(' ')
+
+  cc.appendChild(mk('div','pdf-cover-line1',esc(line1),{style:`color:${T.accL};font-size:13px;font-weight:400`}))
+  cc.appendChild(mk('div','pdf-cover-line2',line2?esc(line2):'',(line2?{style:`color:#fff;font-size:28px;font-weight:700;line-height:1.1`}:{style:'display:none'})))
+
+  const accentLine = mk('div','pdf-cover-accent','',({}))
+  accentLine.style.cssText=`width:42px;height:2.5px;border-radius:2px;background:${T.acc};margin:8px 0`
+  cc.appendChild(accentLine)
+
+  if(ST.meta.subtitle) cc.appendChild(mk('div','pdf-cover-sub',esc(ST.meta.subtitle),{style:`color:${T.muted}`}))
+
+  if(ST.meta.clientName){
+    const cb=mk('div','','',({}))
+    cb.style.cssText=`display:inline-block;padding:7px 12px;border-radius:9px;background:${T.surf};margin-bottom:12px`
+    cb.innerHTML=`<div style="font-size:9px;color:${T.muted};font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:2px">PREPARADO PARA</div><div style="font-size:12px;color:${T.text};font-weight:600">${esc(ST.meta.clientName)}</div>`
+    cc.appendChild(cb)
+  }
+
+  const sep = mk('div','pdf-cover-sep','',({})); sep.style.borderTop=`1px solid ${T.border}`
+  cc.appendChild(sep)
+  cc.appendChild(mk('div','pdf-cover-date',esc(ST.meta.date),{style:`color:${T.muted}`}))
+  cc.appendChild(mk('div','pdf-cover-tagline',`"${esc(ST.meta.tagline||'La clave está en el equilibrio')}"`,{style:`color:${T.accL}`}))
+
+  ap(coverBody,sidebar,cc)
+  cover.appendChild(coverBody)
+  const strip=mk('div','pdf-strip',esc(ST.meta.brandName||'JAVIER MANZANO FITNESS'),{})
+  strip.style.background=T.acc
+  cover.appendChild(strip)
+  pInner.appendChild(cover)
+
+  // Content page
+  const cp = mk('div','pdf-page','',({}))
+  cp.style.cssText=`background:${T.bg};border:1px solid ${T.border};margin-bottom:14px`
+  const ph=mk('div','pdf-hdr','',({})); ph.style.borderColor=T.border
+  ph.appendChild(mk('p','',(ST.meta.title||'').toUpperCase(),{style:`color:${T.muted}`}))
+  ph.appendChild(mk('p','','JAVIER MANZANO FITNESS',{style:`color:${T.muted}`}))
+  cp.appendChild(ph)
+  const pb=mk('div','pdf-body')
+  const prev=ST.sections.slice(0,5)
+  if(!prev.length){
+    pb.appendChild(mk('p','muted text-sm center','',({})).innerHTML='Sin secciones')
+  } else {
+    prev.forEach((s,i)=>{
+      const sd=mk('div','pdf-sec')
+      if(s.title){
+        const sh=mk('div','pdf-sec-h')
+        const bar=mk('div','pdf-sec-bar','',({})); bar.style.background=T.acc
+        sh.appendChild(bar)
+        sh.appendChild(mk('p','pdf-sec-title',esc(s.title),{style:`color:${T.text}`}))
+        sd.appendChild(sh)
+      }
+      if(s.content) sd.appendChild(mk('p','pdf-sec-body',esc(s.content.substring(0,200)+(s.content.length>200?'...':'')),{style:`color:${T.muted}`}))
+      pb.appendChild(sd)
+      if(i<prev.length-1){ const d=mk('div','pdf-divider','',({})); d.style.background=T.border; pb.appendChild(d) }
+    })
+    if(ST.sections.length>5) pb.appendChild(mk('p','',`+ ${ST.sections.length-5} secciones más en el PDF`,{style:`text-align:center;color:${T.muted};font-size:11px;margin-top:10px`}))
+  }
+  cp.appendChild(pb)
+  const pf=mk('div','pdf-ftr','',({})); pf.style.borderColor=T.border
+  pf.appendChild(mk('p','',`Javier Manzano Fitness · "${ST.meta.tagline||'La clave está en el equilibrio'}"`,{style:`color:${T.muted}`}))
+  pf.appendChild(mk('p','','2',{style:`color:${T.muted}`}))
+  cp.appendChild(pf)
+  pInner.appendChild(cp)
+
+  pWrap.appendChild(pInner)
+  wrap.appendChild(pWrap)
+
+  const btm = mk('div','center','',({}))
+  btm.style.cssText='margin-top:28px;padding-top:22px;border-top:1px solid rgba(255,255,255,0.06)'
+  const dl2=mk('button','btn btn-primary','⬇ Descargar PDF Premium',{id:'dl-btn2',style:'font-size:15px;padding:13px 32px'})
+  dl2.onclick=handleDownload
+  btm.appendChild(dl2)
+  const infoP=mk('p','text-xs muted',''); infoP.style.cssText='margin-top:10px;line-height:1.6'; infoP.textContent='Todo el procesamiento es local · Ningún dato sale de tu navegador'; btm.appendChild(infoP)
+  wrap.appendChild(btm)
+
+  return wrap
+}
+
+// ════════════════════════════════════════════════════════════════
+// PDF GENERATION (jsPDF)
+// ════════════════════════════════════════════════════════════════
+const PDF_THEMES={
+  'premium-blue':{bg:[4,8,26],surf:[13,26,62],acc:[59,130,246],accL:[147,197,253],text:[226,232,240],muted:[100,116,139],border:[30,58,95]},
+  'minimal-white':{bg:[250,251,255],surf:[241,245,254],acc:[37,99,235],accL:[37,99,235],text:[17,24,39],muted:[107,114,128],border:[219,234,254]},
+  'dark-elegant':{bg:[10,10,18],surf:[18,18,30],acc:[168,85,247],accL:[216,180,254],text:[226,232,240],muted:[148,163,184],border:[40,40,64]},
+}
+
+async function handleDownload(){
+  const btns=['dl-btn','dl-btn2'].map(id=>document.getElementById(id)).filter(Boolean)
+  btns.forEach(b=>{ b.disabled=true; b.innerHTML='<div class="spinner" style="width:16px;height:16px;border-width:2px"></div> Generando...' })
+  try{
+    await delay(80)
+    const doc = buildPDF(ST.theme)
+    const fname=(ST.meta.title||'documento').toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'')
+    doc.save(fname+'.pdf')
+    const ok=document.getElementById('dl-ok')
+    if(ok){ ok.style.display='flex'; setTimeout(()=>ok.style.display='none',4000) }
+  } catch(e){
+    alert('Error al generar PDF: '+e.message); console.error(e)
+  } finally {
+    btns.forEach(b=>{ b.disabled=false; b.innerHTML='⬇ Descargar PDF Premium' })
+  }
+}
+
+function buildPDF(themeKey){
+  const {jsPDF}=window.jspdf
+  const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'})
+  const T=PDF_THEMES[themeKey]||PDF_THEMES['premium-blue']
+  const W=210,H=297,M=20,CW=170
+  let y=M,page=1
+
+  const fill=c=>doc.setFillColor(c[0],c[1],c[2])
+  const stroke=c=>doc.setDrawColor(c[0],c[1],c[2])
+  const tc=c=>doc.setTextColor(c[0],c[1],c[2])
+
+  function footer(){
+    stroke(T.border); doc.setLineWidth(.25)
+    doc.line(M,H-14,W-M,H-14)
+    doc.setFontSize(6.5); tc(T.muted); doc.setFont('helvetica','normal')
+    doc.text('Javier Manzano Fitness  ·  "La clave está en el equilibrio"',M,H-9)
+    doc.text(String(page),W-M,H-9,{align:'right'})
+    fill(T.acc); doc.rect(0,H-4,W,4,'F')
+  }
+
+  function pageHeader(title){
+    fill(T.surf); doc.rect(0,H-14,W,14,'F')
+    // Gradient strip top (simulate with multiple rects)
+    for(let i=0;i<20;i++){
+      const r=Math.round(T.acc[0]+(T.accL[0]-T.acc[0])*i/20)
+      const g2=Math.round(T.acc[1]+(T.accL[1]-T.acc[1])*i/20)
+      const b=Math.round(T.acc[2]+(T.accL[2]-T.acc[2])*i/20)
+      doc.setFillColor(r,g2,b)
+      doc.rect(W*i/20,H-1.2,W/20+.5,1.2,'F')
+    }
+    doc.setFontSize(6.5); tc(T.muted); doc.setFont('helvetica','normal')
+    doc.text((title||'').toUpperCase().substring(0,40),M,H-5.5)
+    doc.text('JAVIER MANZANO FITNESS',W-M,H-5.5,{align:'right'})
+    // Top header
+    fill(T.surf); doc.rect(0,H-8,W,0,'F')
+    for(let i=0;i<20;i++){
+      const r=Math.round(T.acc[0]+(T.accL[0]-T.acc[0])*i/20)
+      const g2=Math.round(T.acc[1]+(T.accL[1]-T.acc[1])*i/20)
+      const b=Math.round(T.acc[2]+(T.accL[2]-T.acc[2])*i/20)
+      doc.setFillColor(r,g2,b)
+      doc.rect(W*i/20,H-1.2,W/20+.5,1.2,'F')
+    }
+  }
+
+  function contentHeader(title){
+    // Page bg
+    fill(T.bg); doc.rect(0,0,W,H,'F')
+    // Subtle grid
+    doc.setLineWidth(.15)
+    for(let xi=0;xi<W;xi+=18){ stroke([T.acc[0],T.acc[1],T.acc[2]]); doc.setDrawColor(T.acc[0],T.acc[1],T.acc[2],0.03); doc.line(xi,0,xi,H) }
+    // Header strip
+    fill(T.surf); doc.rect(0,H-18,W,18,'F')
+    for(let i=0;i<30;i++){
+      const r=Math.round(T.acc[0]+(T.accL[0]-T.acc[0])*i/30)
+      const g2=Math.round(T.acc[1]+(T.accL[1]-T.acc[1])*i/30)
+      const b=Math.round(T.acc[2]+(T.accL[2]-T.acc[2])*i/30)
+      doc.setFillColor(r,g2,b)
+      doc.rect(W*i/30,H-1.4,W/30+.5,1.4,'F')
+    }
+    doc.setFontSize(6.5); tc(T.muted); doc.setFont('helvetica','normal')
+    doc.text((title||'').toUpperCase().substring(0,40),M,H-6.5)
+    doc.text('JAVIER MANZANO FITNESS',W-M,H-6.5,{align:'right'})
+    // Top header
+    fill(T.surf); doc.rect(0,H-4,W,4,'F')
+    for(let i=0;i<30;i++){
+      const r=Math.round(T.acc[0]+(T.accL[0]-T.acc[0])*i/30)
+      const g2=Math.round(T.acc[1]+(T.accL[1]-T.acc[1])*i/30)
+      const b=Math.round(T.acc[2]+(T.accL[2]-T.acc[2])*i/30)
+      doc.setFillColor(r,g2,b)
+      doc.rect(W*i/30,H-1.4,W/30+.5,1.4,'F')
+    }
+  }
+
+  function newPage(){
+    footer()
+    doc.addPage(); page++; y=M
+    fill(T.bg); doc.rect(0,0,W,H,'F')
+    contentHeader(ST.meta.title)
+    y+=10
+  }
+
+  function checkSpace(needed){ if(y+needed>H-26) newPage() }
+
+  function drawSection(title,content){
+    if(!content&&!title) return
+    const lines=content?doc.splitTextToSize(content,CW-6):[]
+    checkSpace((title?14:0)+lines.length*5.5+14)
+    if(title){
+      fill(T.acc); doc.rect(M,y,3,7,'F')
+      doc.setFont('helvetica','bold'); doc.setFontSize(13); tc(T.text)
+      doc.text(title.substring(0,50),M+7,y+5.5)
+      y+=11; stroke(T.border); doc.setLineWidth(.25)
+      doc.line(M,y,W-M,y); y+=5
+    }
+    if(lines.length){
+      doc.setFont('helvetica','normal'); doc.setFontSize(10); tc(T.text)
+      lines.forEach(line=>{ checkSpace(6); doc.text(line,M+4,y); y+=5.5 })
+    }
+    y+=10
+  }
+
+  // ── COVER ────────────────────────────────────────────────────
+  // Background gradient
+  for(let i=0;i<60;i++){
+    const ratio=i/60
+    doc.setFillColor(
+      Math.round(T.bg[0]+ratio*12),
+      Math.round(T.bg[1]+ratio*18),
+      Math.round(T.bg[2]+ratio*38)
+    )
+    doc.rect(0,H*i/60,W,H/60+.5,'F')
+  }
+
+  // Big decorative circle
+  for(let r=130;r>0;r-=4){
+    const alpha=0.003*(1-r/130)
+    doc.setFillColor(T.acc[0],T.acc[1],T.acc[2])
+    doc.circle(W+15,H*0.5,r,'F')
+  }
+
+  // Sidebar gradient
+  for(let i=0;i<H;i+=2){
+    const ratio=i/H
+    doc.setFillColor(
+      Math.round(T.acc[0]*(1-ratio*.5)),
+      Math.round(T.acc[1]*(1-ratio*.6)),
+      Math.round(T.acc[2]*(1-ratio*.2))
+    )
+    doc.rect(0,i,10,2,'F')
+  }
+
+  // Top gradient strip
+  for(let i=0;i<W;i+=3){
+    const ratio=i/W
+    const r=Math.round(T.acc[0]+ratio*20)
+    const g2=Math.round(T.acc[1]-ratio*30)
+    const b=Math.round(T.acc[2]-ratio*40)
+    doc.setFillColor(r,g2,b)
+    doc.rect(i,H-3.5,3.5,3.5,'F')
+  }
+
+  // Large BG number
+  doc.setTextColor(T.acc[0],T.acc[1],T.acc[2])
+  // BG number (sin opacity por compatibilidad jsPDF CDN)
+  doc.setFont('helvetica','bold'); doc.setFontSize(200)
+  doc.text(ST.meta.moduleNum||'',W-10,42,{align:'right'})
+
+  // Brand badge
+  fill(T.surf); doc.roundedRect(13,H-22,60,10,2,2,'F')
+  doc.setFont('helvetica','bold'); doc.setFontSize(7.5); tc(T.accL)
+  doc.text(ST.meta.brandName||'JAVIER MANZANO FITNESS',14,H-15.5)
+
+  // Module pill
+  if(ST.meta.moduleNum){
+    fill(T.surf); doc.roundedRect(13,H*0.75,20,8,2,2,'F')
+    doc.setFont('helvetica','bold'); doc.setFontSize(7.5); tc(T.accL)
+    doc.text(`MÓD. ${ST.meta.moduleNum}`,14.5,H*0.75+5.5)
+  }
+
+  // Accent line
+  fill(T.acc); doc.rect(13,H*0.695,20,.8,'F')
+
+  // Title split
+  const titleWords=(ST.meta.title||'Documento').toUpperCase().split(' ')
+  const mid=Math.ceil(titleWords.length/2)
+  const tl1=titleWords.slice(0,mid).join(' ')
+  const tl2=titleWords.slice(mid).join(' ')
+
+  const tY=H*0.56
+  tc(T.accL); doc.setFont('helvetica','normal'); doc.setFontSize(16)
+  doc.text(tl1||'',13,tY+10)
+  tc([255,255,255]); doc.setFont('helvetica','bold'); doc.setFontSize(36)
+  if(tl2) doc.text(tl2,13,tY+26)
+  tc(T.acc); doc.setFont('helvetica','bold'); doc.setFontSize(36)
+  // If single line, use different split
+  if(!tl2){ doc.setFontSize(30); doc.text(tl1,13,tY+20) }
+
+  // Subtitle
+  if(ST.meta.subtitle){
+    tc(T.muted); doc.setFont('helvetica','normal'); doc.setFontSize(10.5)
+    doc.text(ST.meta.subtitle,13,tY+36)
+  }
+
+  // Client box
+  if(ST.meta.clientName){
+    const cy=tY+48; fill(T.surf)
+    doc.roundedRect(13,cy,75,16,2.5,2.5,'F')
+    tc(T.muted); doc.setFont('helvetica','bold'); doc.setFontSize(7)
+    doc.text('PREPARADO PARA',15,cy+5.5)
+    tc(T.text); doc.setFont('helvetica','bold'); doc.setFontSize(10.5)
+    doc.text(ST.meta.clientName,15,cy+12)
+  }
+
+  // Date & tagline
+  const dY=H*0.24
+  tc(T.muted); doc.setFont('helvetica','normal'); doc.setFontSize(9)
+  doc.text(ST.meta.date,13,dY)
+  tc(T.accL); doc.setFont('helvetica','italic'); doc.setFontSize(10)
+  doc.text(`"${ST.meta.tagline||'La clave está en el equilibrio'}"`,13,dY+7)
+
+  // Bottom strip
+  for(let i=0;i<W;i+=3){
+    const ratio=i/W
+    doc.setFillColor(
+      Math.round(T.acc[0]+ratio*15),
+      Math.round(T.acc[1]-ratio*20),
+      Math.round(T.acc[2]-ratio*30)
+    )
+    doc.rect(i,0,3.5,12,'F')
+  }
+  doc.setFont('helvetica','bold'); doc.setFontSize(8.5)
+  doc.setTextColor(255,255,255)
+  doc.text(ST.meta.brandName||'JAVIER MANZANO FITNESS',W/2,7.5,{align:'center'})
+
+  // ── CONTENT ─────────────────────────────────────────────────
+  doc.addPage(); page++
+  fill(T.bg); doc.rect(0,0,W,H,'F')
+  contentHeader(ST.meta.title)
+  y=M+10
+
+  const intro=ST.sections.find(s=>s.isIntro||!s.title)
+  const mains=ST.sections.filter(s=>!s.isIntro&&s.title)
+  if(intro?.content) drawSection('Introducción',intro.content)
+  for(const s of mains) drawSection(s.title,s.content)
+
+  // ── CLOSING ─────────────────────────────────────────────────
+  newPage()
+  fill(T.acc); doc.rect(M,y,3,9,'F')
+  doc.setFont('helvetica','bold'); doc.setFontSize(16); tc(T.text)
+  doc.text('Mensaje Final',M+7,y+7); y+=18
+
+  const closing=ST.meta.closingMessage||'Gracias por confiar en este proceso. El camino hacia una salud integral comienza con pequeñas decisiones consistentes. Estoy aquí para acompañarte en cada paso.'
+  doc.setFont('helvetica','normal'); doc.setFontSize(10); tc(T.text)
+  const cl=doc.splitTextToSize(closing,CW-6)
+  doc.text(cl,M+4,y); y+=cl.length*6+14
+
+  // Quote box
+  fill(T.surf); doc.roundedRect(M,y,CW,22,3,3,'F')
+  fill(T.acc); doc.rect(M,y,3,22,'F')
+  doc.setFont('helvetica','bold'); doc.setFontSize(12); tc(T.accL)
+  doc.text(`"${ST.meta.tagline||'La clave está en el equilibrio'}"`,W/2,y+13,{align:'center'})
+  y+=32
+
+  if(ST.meta.contact){
+    tc(T.muted); doc.setFont('helvetica','normal'); doc.setFontSize(9)
+    doc.text(ST.meta.contact,W/2,y,{align:'center'}); y+=8
+  }
+  tc(T.muted); doc.text(ST.meta.brandName||'JAVIER MANZANO FITNESS',W/2,y,{align:'center'})
+
+  // Final strip
+  for(let i=0;i<W;i+=3){
+    const ratio=i/W
+    doc.setFillColor(Math.round(T.acc[0]+ratio*15),Math.round(T.acc[1]-ratio*20),Math.round(T.acc[2]-ratio*30))
+    doc.rect(i,0,3.5,12,'F')
+  }
+  doc.setFont('helvetica','bold'); doc.setFontSize(8.5)
+  doc.setTextColor(255,255,255)
+  doc.text(ST.meta.brandName||'JAVIER MANZANO FITNESS',W/2,7.5,{align:'center'})
+
+  footer()
+  return doc
+}
+
+// ════════════════════════════════════════════════════════════════
+// FILE PROCESSING
+// ════════════════════════════════════════════════════════════════
+function moveSection(id,dir){
+  const arr=[...ST.sections]
+  const i=arr.findIndex(s=>s.id===id)
+  if(dir==='up'&&i===0||dir==='down'&&i===arr.length-1) return
+  const sw=dir==='up'?i-1:i+1;[arr[i],arr[sw]]=[arr[sw],arr[i]]
+  set({sections:arr})
+}
+
+async function processFile(file){
+  const validTypes = ['application/pdf','application/vnd.openxmlformats-officedocument.wordprocessingml.document']
+  if(!file||!validTypes.includes(file.type)){ showErr('Selecciona un archivo PDF o Word (.docx) válido.'); return }
+  if(file.size>25*1024*1024){ showErr('El archivo es demasiado grande. Máximo 25 MB.'); return }
+  hideErr()
+
+  const idle=document.getElementById('dz-idle')
+  const loading=document.getElementById('dz-loading')
+  const prog=document.getElementById('prog-bar')
+  const progTxt=document.getElementById('prog-text')
+  if(idle) idle.style.display='none'
+  if(loading) loading.style.display='block'
+
+  const setP=(pct,txt)=>{ if(prog) prog.style.width=pct+'%'; if(progTxt) progTxt.textContent=txt }
+
+  try{
+    const isDocx = file.name.toLowerCase().endsWith('.docx')
+    setP(20, isDocx ? 'Leyendo Word...' : 'Leyendo PDF...'); await delay(200)
+    const raw = isDocx ? await extractDocx(file) : await extractPDF(file)
+    setP(60,'Analizando estructura...'); await delay(200)
+    const sections = basicStructure(raw)
+    const inf = inferMeta(file.name, sections)
+    ST.rawText=raw; ST.sections=sections; ST.filename=file.name
+    if(!ST.meta.title) ST.meta.title=inf.title
+    if(!ST.meta.subtitle) ST.meta.subtitle=inf.subtitle
+    setP(100,'Listo'); await delay(300)
+    set({step:'extract'})
+  } catch(e){
+    console.error(e)
+    if(idle) idle.style.display='block'
+    if(loading) loading.style.display='none'
+    showErr('Error al leer el PDF. El archivo puede estar protegido o dañado.')
+  }
+}
+
+function showErr(msg){ const e=document.getElementById('upload-err'); if(e){ e.innerHTML='⚠️ '+esc(msg); e.style.display='flex' } }
+function hideErr(){ const e=document.getElementById('upload-err'); if(e) e.style.display='none' }
+
+function bindAll(){
+  // Upload
+  const dz=document.getElementById('dropzone')
+  const fi=document.createElement('input'); fi.type='file'; fi.accept='.pdf,.docx'
+  fi.onchange=e=>{ if(e.target.files[0]) processFile(e.target.files[0]) }
+  const selBtn=document.getElementById('sel-btn')
+  if(selBtn) selBtn.onclick=e=>{ e.stopPropagation(); fi.click() }
+  if(dz){
+    dz.ondragover=e=>{ e.preventDefault(); dz.classList.add('on') }
+    dz.ondragleave=()=>dz.classList.remove('on')
+    dz.ondrop=e=>{ e.preventDefault(); dz.classList.remove('on'); if(e.dataTransfer.files[0]) processFile(e.dataTransfer.files[0]) }
+    dz.onclick=e=>{ if(e.target===dz||e.target.id==='dz-idle'||e.target.closest('#dz-idle')) fi.click() }
+  }
+}
+
+// ════════════════════════════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════════════════════════════
+updateApiIndicator()
+render()
+</script>
+</body>
+</html>
